@@ -4,50 +4,63 @@
 }
 
 .order-create-page {
-  padding: clamp(16px, 4vw, 24px);
+  padding: clamp(16px, 4vw, 32px);
   max-width: 900px;
   margin: 0 auto;
-  color: #111;
-  background: #f5f6fa;
-  min-height: calc(100dvh - 64px);
+  color: #222;
+  background: #F4F5F7;
+  min-height: calc(100dvh - 76px);
+}
+
+.order-create-title-bar {
+  background: #fff;
+  border: 1px solid #e0e5ef;
+  border-left: 4px solid #003087;
+  border-radius: 4px;
+  padding: 14px 18px;
+  margin-bottom: 20px;
 }
 
 .order-create-title {
-  margin: 0 0 6px;
-  font-size: 22px;
-  color: #111;
+  margin: 0 0 4px;
+  font-size: 18px;
+  font-weight: 800;
+  color: #003087;
 }
 
 .order-create-subtitle {
-  margin: 0 0 16px;
-  color: #333;
+  margin: 0;
+  font-size: 13px;
+  color: #777;
 }
 
 .order-create-bulk-banner {
-  border: 1px solid #ddd;
-  border-radius: 10px;
-  background: #fff;
-  padding: 12px 14px;
-  margin: 0 0 12px;
+  border: 1px solid #e0e5ef;
+  border-radius: 4px;
+  background: #F8FAFF;
+  border-left: 3px solid #003087;
+  padding: 12px 16px;
+  margin: 0 0 14px;
 }
 
 .order-create-bulk-title {
   font-weight: 800;
-  color: #111;
+  color: #003087;
   margin: 0 0 4px;
+  font-size: 14px;
 }
 
 .order-create-bulk-desc {
   font-size: 13px;
-  color: #333;
-  line-height: 1.45;
+  color: #555;
+  line-height: 1.5;
 }
 
 .order-create-card {
-  border: 1px solid #ddd;
-  border-radius: 10px;
+  border: 1px solid #e0e5ef;
+  border-radius: 4px;
   background: #fff;
-  padding: 16px;
+  padding: 18px;
 }
 
 .order-create-item {
@@ -59,9 +72,10 @@
 .order-create-thumb {
   width: 140px;
   height: 140px;
-  border-radius: 10px;
+  border-radius: 3px;
   overflow: hidden;
-  background: #eee;
+  background: #f0f2f5;
+  border: 1px solid #e0e5ef;
 }
 
 .order-create-thumb img {
@@ -78,13 +92,14 @@
 
 .order-create-name {
   margin: 0 0 6px;
-  font-size: 18px;
-  color: #111;
+  font-size: 17px;
+  font-weight: 700;
+  color: #222;
 }
 
 .order-create-desc {
   margin: 0 0 12px;
-  color: #333;
+  color: #777;
   font-size: 13px;
 }
 
@@ -95,45 +110,50 @@
   gap: 12px;
   padding: 8px 0;
   border-top: 1px solid #eee;
-  color: #111;
+  font-size: 14px;
 }
 
 .order-create-row.total {
-  border-top: 1px solid #ddd;
+  border-top: 2px solid #003087;
+  margin-top: 4px;
 }
 
 .order-create-label {
-  color: #111;
+  color: #777;
   font-weight: 600;
 }
 
 .order-create-value {
-  color: #111;
+  color: #222;
   font-weight: 600;
 }
 
 .order-create-total {
-  color: #111;
+  color: #003087;
   font-weight: 800;
+  font-size: 18px;
 }
 
 .order-create-actions {
   display: flex;
   justify-content: flex-end;
-  gap: 8px;
+  gap: 10px;
   margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid #eee;
 }
 
 .order-create-bulk-queue {
-  margin-top: 12px;
-  padding-top: 12px;
+  margin-top: 14px;
+  padding-top: 14px;
   border-top: 1px solid #eee;
 }
 
 .order-create-bulk-queue-title {
   font-weight: 800;
-  color: #111;
-  margin: 0 0 8px;
+  color: #003087;
+  margin: 0 0 10px;
+  font-size: 14px;
 }
 
 .order-create-bulk-queue-list {
@@ -150,37 +170,50 @@
   justify-content: space-between;
   align-items: center;
   gap: 12px;
-  padding: 8px 10px;
-  border: 1px solid #eee;
-  border-radius: 8px;
-  color: #111;
+  padding: 8px 12px;
+  border: 1px solid #e0e5ef;
+  border-radius: 3px;
+  background: #F8FAFF;
+  font-size: 13px;
 }
 
 .order-create-bulk-queue-item .name {
   font-weight: 700;
+  color: #222;
 }
 
 .order-create-bulk-queue-item .meta {
   font-size: 13px;
-  color: #333;
+  color: #003087;
   font-weight: 700;
   white-space: nowrap;
 }
 
 .order-create-btn {
   border: none;
-  background: #4a6cf7;
+  background: #003087;
   color: #fff;
-  padding: 10px 14px;
-  border-radius: 8px;
+  padding: 10px 16px;
+  border-radius: 3px;
   cursor: pointer;
   font-weight: 700;
+  font-size: 13px;
+  font-family: inherit;
+  transition: background-color 0.2s;
+}
+
+.order-create-btn:hover {
+  background: #002070;
 }
 
 .order-create-btn.ghost {
   background: transparent;
-  color: #4a6cf7;
-  border: 1px solid #4a6cf7;
+  color: #003087;
+  border: 1px solid #003087;
+}
+
+.order-create-btn.ghost:hover {
+  background: #EEF4FF;
 }
 
 @media (max-width: 640px) {

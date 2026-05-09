@@ -1,57 +1,75 @@
-import Header from "../components/Header";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "../hooks/userAuth";
-import { useEffect, useState } from "react";
-import { userApi } from "../api/userApi";
-import { weatherApi } from "../api/weatherApi";
-import { enlistmentApi } from "../api/enlistmentApi";
-import { noticeApi } from "../api/noticeApi";
-import "../styles/home.css";
+import Header from '../components/Header';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../hooks/userAuth';
+import { useEffect, useState } from 'react';
+import { userApi } from '../api/userApi';
+import { weatherApi } from '../api/weatherApi';
+import { enlistmentApi } from '../api/enlistmentApi';
+import { noticeApi } from '../api/noticeApi';
+import '../styles/home.css';
+
+const QUICK_SERVICES = [
+  { icon: '📋', label: '입영 일정 조회', path: '/enlistment' },
+  { icon: '📝', label: '연기 신청', path: '/deferments' },
+  { icon: '🛒', label: '군장용품 구매', path: '/products' },
+  { icon: '📢', label: '공지사항', path: '/notices' },
+  { icon: '💬', label: 'QnA / 민원', path: '/qna' },
+  { icon: '🤖', label: '실시간 상담', path: '/chat' },
+  { icon: '👤', label: '마이페이지', path: '/mypage' },
+  { icon: '🛍️', label: '장바구니', path: '/cart' },
+  { icon: '📦', label: '주문내역', path: '/orders' },
+  { icon: '🔍', label: '통합 검색', path: '/search' },
+];
 
 export default function Home() {
   const navigate = useNavigate();
   const { isLoggedIn, userId } = useAuth();
   const [detailedUserInfo, setDetailedUserInfo] = useState<any>(null);
-  const [searchKeyword, setSearchKeyword] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [searchKeyword, setSearchKeyword] = useState('');
   const [weather, setWeather] = useState<any>(null);
-  const [weatherLoading, setWeatherLoading] = useState(false);
+  const [weatherLoading, setWeatherLoading] = useState(true);
   const [thisWeekSchedules, setThisWeekSchedules] = useState<any>(null);
-  const [thisWeekLoading, setThisWeekLoading] = useState(false);
+  const [thisWeekLoading, setThisWeekLoading] = useState(true);
   const [notices, setNotices] = useState<any[]>([]);
-  const [noticesLoading, setNoticesLoading] = useState(false);
+  const [noticesLoading, setNoticesLoading] = useState(true);
 
   const NX = 36;
   const NY = 127;
 
-  // 로그인된 경우 상세 사용자 정보 가져오기
   useEffect(() => {
     if (isLoggedIn && userId) {
-      setLoading(true);
       userApi
         .getProfile(userId)
-        .then((res) => {
-          setDetailedUserInfo(res.data?.data);
-        })
-        .catch(() => {})
-        .finally(() => {
-          setLoading(false);
-        });
+        .then((res) => setDetailedUserInfo(res.data?.data))
+        .catch(() => {});
     }
   }, [isLoggedIn, userId]);
 
-  // 날씨 정보 가져오기
   useEffect(() => {
-    setWeatherLoading(true);
     weatherApi
       .getTodayWeather()
+      .then((res) => setWeather(res.data?.data))
+      .catch(() => {})
+      .finally(() => setWeatherLoading(false));
+  }, []);
+
+  useEffect(() => {
+    enlistmentApi
+      .getThisWeekSummary(NX, NY)
+      .then((res) => setThisWeekSchedules(res.data?.data))
+      .catch(() => {})
+      .finally(() => setThisWeekLoading(false));
+  }, []);
+
+  useEffect(() => {
+    noticeApi
+      .getNoticeList({ page: 0, size: 6 })
       .then((res) => {
-        setWeather(res.data?.data);
+        const data = res.data?.data;
+        setNotices(Array.isArray(data) ? data : data?.content || []);
       })
       .catch(() => {})
-      .finally(() => {
-        setWeatherLoading(false);
-      });
+      .finally(() => setNoticesLoading(false));
   }, []);
 
   const handleSearch = () => {
@@ -60,55 +78,28 @@ export default function Home() {
     navigate(`/search?q=${encodeURIComponent(q)}`);
   };
 
-  // 이번주 입영 일정 가져오기
-  useEffect(() => {
-    setThisWeekLoading(true);
-    enlistmentApi
-      .getThisWeekSummary(NX, NY)
-      .then((res) => {
-        setThisWeekSchedules(res.data?.data);
-      })
-      .catch(() => {})
-      .finally(() => {
-        setThisWeekLoading(false);
-      });
-  }, []);
-
-  // 공지사항 가져오기
-  useEffect(() => {
-    setNoticesLoading(true);
-    noticeApi
-      .getNoticeList({ page: 0, size: 5 })
-      .then((res) => {
-        const data = res.data?.data;
-        setNotices(Array.isArray(data) ? data : data?.content || []);
-      })
-      .catch(() => {})
-      .finally(() => {
-        setNoticesLoading(false);
-      });
-  }, []);
-
   const getProfileImageUrl = (profile: any): string | null => {
     const candidate = profile?.profileImageUrl;
-    if (typeof candidate !== "string") return null;
+    if (typeof candidate !== 'string') return null;
     const trimmed = candidate.trim();
     return trimmed ? trimmed : null;
   };
 
   const profileImageUrl = getProfileImageUrl(detailedUserInfo);
   const avatarFallbackText = (() => {
-    const name = typeof detailedUserInfo?.username === "string" ? detailedUserInfo.username.trim() : "";
-    return name ? name.slice(0, 1) : "U";
+    const name =
+      typeof detailedUserInfo?.username === 'string'
+        ? detailedUserInfo.username.trim()
+        : '';
+    return name ? name.slice(0, 1) : 'U';
   })();
 
   const thisWeekList: any[] = (() => {
     const data = thisWeekSchedules;
     if (Array.isArray(data)) return data;
     if (Array.isArray(data?.enlistmentResponse)) return data.enlistmentResponse;
-    if (data?.enlistmentResponse && typeof data.enlistmentResponse === "object") {
+    if (data?.enlistmentResponse && typeof data.enlistmentResponse === 'object')
       return [data.enlistmentResponse];
-    }
     if (Array.isArray(data?.content)) return data.content;
     return [];
   })();
@@ -116,427 +107,313 @@ export default function Home() {
   const visibleThisWeekList = (() => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-
-    const parseYmdToLocalDate = (value?: string): Date | null => {
-      if (!value || typeof value !== "string") return null;
-      const trimmed = value.trim();
-      const m = /^\d{4}-\d{2}-\d{2}$/.exec(trimmed);
+    const parseDate = (value?: string): Date | null => {
+      if (!value || typeof value !== 'string') return null;
+      const m = /^\d{4}-\d{2}-\d{2}$/.exec(value.trim());
       if (!m) return null;
-      const [y, mo, d] = trimmed.split("-").map((v) => Number(v));
-      if (!Number.isFinite(y) || !Number.isFinite(mo) || !Number.isFinite(d)) return null;
+      const [y, mo, d] = value.trim().split('-').map(Number);
       return new Date(y, mo - 1, d);
     };
-
     return thisWeekList.filter((it) => {
-      const dateStr = it?.enlistmentDate ?? it?.date;
-      const parsed = parseYmdToLocalDate(dateStr);
-      // 날짜 파싱이 안 되면 일단 보여주기
+      const parsed = parseDate(it?.enlistmentDate ?? it?.date);
       if (!parsed) return true;
       parsed.setHours(0, 0, 0, 0);
       return parsed >= today;
     });
   })();
 
+  const greetingName =
+    isLoggedIn && detailedUserInfo
+      ? `${detailedUserInfo.username} 님, 환영합니다`
+      : '병무청에 오신 것을 환영합니다';
 
   return (
-    <>
+    <div className="home-page">
       <Header />
 
-      <main style={styles.container}>
-        {/* 인사 영역 */}
-        <section style={styles.hero}>
-          <h1
-            style={{
-              ...styles.title,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: "10px",
-            }}
-          >
-            {isLoggedIn && detailedUserInfo && (
-              <span style={styles.avatarWrap}>
-                {profileImageUrl ? (
-                  <img src={profileImageUrl} alt="프로필" style={styles.avatarImg} loading="lazy" />
-                ) : (
-                  <span style={styles.avatarFallback}>{avatarFallbackText}</span>
-                )}
-              </span>
-            )}
-            <span>
-              {isLoggedIn && detailedUserInfo ? `${detailedUserInfo.username} 님, 안녕하세요?` : "안녕하세요?"}
+      {/* Hero */}
+      <section className="home-hero">
+        <p className="home-hero__greeting">MILITARY MANPOWER ADMINISTRATION</p>
+        <h1 className="home-hero__title">
+          {isLoggedIn && detailedUserInfo && (
+            <span className="home-hero__avatar-wrap">
+              {profileImageUrl ? (
+                <img
+                  src={profileImageUrl}
+                  alt="프로필"
+                  className="home-hero__avatar-img"
+                  loading="lazy"
+                />
+              ) : (
+                <span className="home-hero__avatar-fallback">
+                  {avatarFallbackText}
+                </span>
+              )}
             </span>
-          </h1>
+          )}
+          {greetingName}
+        </h1>
 
-          <div style={styles.searchBox} className="searchBox">
-            <input
-              placeholder="입영 일정, 공지사항 등을 검색해보세요."
-              className="home-searchInput"
-              style={styles.input}
-              value={searchKeyword}
-              onChange={(e) => setSearchKeyword(e.target.value)}
+        <div className="home-search">
+          <input
+            className="home-searchInput"
+            placeholder="입영 일정, 공지사항, 군장용품 등을 검색해보세요"
+            value={searchKeyword}
+            onChange={(e) => setSearchKeyword(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') handleSearch();
+            }}
+          />
+          <button className="home-searchBtn" onClick={handleSearch}>
+            검색
+          </button>
+        </div>
+      </section>
+
+      {/* Quick Services */}
+      <div className="home-quickServices">
+        <div className="home-section-header">
+          <h2 className="home-section-title">빠른 서비스</h2>
+        </div>
+        <div className="home-serviceGrid">
+          {QUICK_SERVICES.map((svc) => (
+            <div
+              key={svc.path}
+              className="home-serviceCard"
+              onClick={() => navigate(svc.path)}
+              role="button"
+              tabIndex={0}
               onKeyDown={(e) => {
-                if (e.key === "Enter") handleSearch();
+                if (e.key === 'Enter') navigate(svc.path);
               }}
-            />
-            <button className="home-searchBtn" style={styles.searchBtn} onClick={handleSearch}>
-              검색
-            </button>
-          </div>
-        </section>
+            >
+              <div className="home-serviceCard__icon">{svc.icon}</div>
+              <span className="home-serviceCard__label">{svc.label}</span>
+            </div>
+          ))}
+        </div>
+      </div>
 
-        {/* 카드 영역 */}
-        <section className="home-cardGrid" style={styles.cardGrid}>
-          <div style={styles.card}>
-            <h4>오늘 날씨</h4>
-            {weatherLoading ? (
-              <p style={{ fontSize: "14px", color: "#999" }}>로딩 중...</p>
-            ) : weather ? (
-              <>
-                <p style={styles.bigText}>
-                  {weather.temperature || weather.temp || "N/A"}°
-                </p>
-                <small>
-                  하늘 상태 : <strong>{weather.skyStatus || weather.description || "정보 없음"}</strong>
-                </small>
-              </>
-            ) : (
-              <>
-                <p style={styles.bigText}>--°</p>
-                <small>날씨 정보를 불러올 수 없습니다</small>
-              </>
-            )}
-          </div>
-
-          <div style={styles.cardCenter}>
-            <h4>실시간 상담</h4>
-            <div style={styles.robotIcon}>🤖</div>
-            <button style={styles.primaryBtn} onClick={() => navigate("/chat")}>
-              상담 시작
-            </button>
-          </div>
-
-          <div style={styles.card}>
-            <h4>내 정보</h4>
-            {isLoggedIn && detailedUserInfo ? (
-              <>
-                {loading ? (
-                  <p style={{ fontSize: "14px", color: "#999" }}>
-                    로딩 중...
-                  </p>
-                ) : (
-                  <>
-                    <p style={{ fontSize: "14px", margin: "8px 0" }}>
-                      <strong>이름:</strong> {detailedUserInfo.username}
-                    </p>
-                    <p style={{ fontSize: "14px", margin: "8px 0" }}>
-                      <strong>이메일:</strong> {detailedUserInfo.email}
-                    </p>
-                  </>
-                )}
-                {/* <button
-                  onClick={() => navigate("/profile")}
-                  style={styles.cardBtn}
-                >
-                  프로필 관리
-                </button> */}
-              </>
-            ) : (
-              <>
-                <p>로그인이 필요합니다</p>
-                <button onClick={() => navigate("/login")} style={styles.cardBtn}>
-                  로그인
-                </button>
-              </>
-            )}
+      {/* Main content */}
+      <div className="home-content">
+        {/* Left: notices + schedule */}
+        <div className="home-main-col">
+          {/* Notices */}
+          <div className="home-govCard">
+            <div className="home-govCard__header">
+              <h3 className="home-govCard__header-title">공지사항</h3>
+              <button
+                className="home-govCard__header-more"
+                onClick={() => navigate('/notices')}
+              >
+                더보기 ›
+              </button>
+            </div>
+            <div className="home-govCard__body" style={{ padding: 0 }}>
+              {noticesLoading ? (
+                <p className="home-loading">불러오는 중...</p>
+              ) : notices.length > 0 ? (
+                <table className="home-noticeTable">
+                  <thead>
+                    <tr>
+                      <th>제목</th>
+                      <th style={{ width: 90 }}>등록일</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {notices.map((notice: any) => (
+                      <tr
+                        key={notice.id}
+                        onClick={() => navigate(`/notices/${notice.id}`)}
+                      >
+                        <td className="notice-title-cell">{notice.title}</td>
+                        <td className="notice-date-cell">
+                          {new Date(notice.createdAt).toLocaleDateString(
+                            'ko-KR',
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              ) : (
+                <p className="home-empty">공지사항이 없습니다</p>
+              )}
+            </div>
           </div>
 
-          <div style={styles.card}>
-            <h4>군장용품 구매</h4>
-            <p>입영 전 필요한 물품을 준비하세요</p>
-            <button onClick={() => navigate("/products")}>
-              상품 보러가기
-            </button>
-          </div>
-
-          <div style={styles.card}>
-            <h4>이번주 입영 일정</h4>
-            {thisWeekLoading ? (
-              <p style={{ fontSize: "14px", color: "#999" }}>로딩 중...</p>
-            ) : visibleThisWeekList.length > 0 ? (
-              <>
-                <div style={{ marginBottom: "12px" }}>
+          {/* This week schedule */}
+          <div className="home-govCard">
+            <div className="home-govCard__header">
+              <h3 className="home-govCard__header-title">이번주 입영 일정</h3>
+              <button
+                className="home-govCard__header-more"
+                onClick={() => navigate('/enlistment')}
+              >
+                더보기 ›
+              </button>
+            </div>
+            <div className="home-govCard__body">
+              {thisWeekLoading ? (
+                <p className="home-loading">불러오는 중...</p>
+              ) : visibleThisWeekList.length > 0 ? (
+                <div className="home-scheduleList">
                   {visibleThisWeekList.map((schedule: any, index: number) => (
                     <div
-                      key={schedule?.scheduleId ?? schedule?.scheduledId ?? schedule?.id ?? index}
-                      style={{
-                        fontSize: "13px",
-                        padding: "8px 0",
-                        borderBottom: index < visibleThisWeekList.length - 1 ? "1px solid #eee" : "none",
-                      }}
+                      key={
+                        schedule?.scheduleId ??
+                        schedule?.scheduledId ??
+                        schedule?.id ??
+                        index
+                      }
+                      className="home-scheduleItem"
+                      onClick={() => navigate('/enlistment')}
                     >
-                      <p style={{ margin: "4px 0", fontWeight: "600" }}>
-                        {schedule.enlistmentDate ?? schedule.date ?? "날짜 미정"}
-                      </p>
-                      <p style={{ margin: "2px 0", fontSize: "12px", color: "#666" }}>
-                        잔여: {schedule.remainingSlots ?? schedule.remaining ?? 0}명
-                      </p>
-                      {schedule.weather && (
-                        <p style={{ margin: "2px 0", fontSize: "12px", color: "#999" }}>
-                          {schedule.weather.temp}° | {schedule.weather.description}
-                        </p>
-                      )}
+                      <div className="home-scheduleItem__badge">입영</div>
+                      <div className="home-scheduleItem__info">
+                        <div className="home-scheduleItem__date">
+                          {schedule.enlistmentDate ??
+                            schedule.date ??
+                            '날짜 미정'}
+                        </div>
+                        {schedule.weather && (
+                          <div className="home-scheduleItem__sub">
+                            {schedule.weather.temp}° ·{' '}
+                            {schedule.weather.description}
+                          </div>
+                        )}
+                      </div>
+                      <div className="home-scheduleItem__slots">
+                        잔여{' '}
+                        {schedule.remainingSlots ?? schedule.remaining ?? 0}명
+                      </div>
                     </div>
                   ))}
                 </div>
-                <button
-                  onClick={() => navigate("/enlistment")}
-                  style={styles.cardBtn}
-                >
-                  일정 확인하기
-                </button>
-              </>
-            ) : (
-              <>
-                <p style={{ fontSize: "14px", color: "#999" }}>이번주 일정이 없습니다</p>
-                <button
-                  onClick={() => navigate("/enlistment")}
-                  style={styles.cardBtn}
-                >
-                  전체 일정 보기
-                </button>
-              </>
-            )}
+              ) : (
+                <p className="home-empty">이번주 입영 일정이 없습니다</p>
+              )}
+            </div>
           </div>
-        </section>
+        </div>
 
-        {/* 공지사항 섹션 */}
-        <section style={styles.noticeSection}>
-          <h2 style={styles.sectionTitle}>공지사항</h2>
-          {noticesLoading ? (
-            <p style={{ fontSize: "14px", color: "#999" }}>로딩 중...</p>
-          ) : notices.length > 0 ? (
-            <>
-              <div style={styles.noticeList}>
-                {notices.map((notice: any) => (
-                  <div
-                    key={notice.id}
-                    style={styles.noticeItem}
-                    onClick={() => navigate(`/notices/${notice.id}`)}
-                  >
-                    <h3 style={styles.noticeTitle}>{notice.title}</h3>
-                    <p style={styles.noticePreview}>
-                      {notice.content?.substring(0, 60)}
-                      {notice.content?.length > 60 ? "..." : ""}
-                    </p>
-                    <p style={styles.noticeDate}>
-                      {new Date(notice.createdAt).toLocaleDateString()}
-                    </p>
+        {/* Right: side cards */}
+        <div className="home-side-col">
+          {/* Weather */}
+          <div className="home-sideCard">
+            <div className="home-sideCard__header">
+              <h4 className="home-sideCard__header-title">오늘의 날씨</h4>
+            </div>
+            <div className="home-sideCard__body">
+              {weatherLoading ? (
+                <p className="home-loading">불러오는 중...</p>
+              ) : weather ? (
+                <>
+                  <div className="home-weather__temp">
+                    {weather.temperature ?? weather.temp ?? '--'}°
                   </div>
-                ))}
-              </div>
-              <button
-                onClick={() => navigate("/notices")}
-                style={styles.cardBtn}
-              >
-                전체 공지사항 보기
-              </button>
-            </>
-          ) : (
-            <>
-              <p style={{ fontSize: "14px", color: "#999" }}>공지사항이 없습니다</p>
-              <button
-                onClick={() => navigate("/notices")}
-                style={styles.cardBtn}
-              >
-                공지사항 보기
-              </button>
-            </>
-          )}
-        </section>
+                  <p className="home-weather__desc">
+                    {weather.skyStatus ?? weather.description ?? '정보 없음'}
+                  </p>
+                </>
+              ) : (
+                <>
+                  <div className="home-weather__temp">--°</div>
+                  <p className="home-weather__desc">날씨 정보 없음</p>
+                </>
+              )}
+            </div>
+          </div>
 
-      </main>
-    </>
+          {/* User info */}
+          <div className="home-sideCard">
+            <div className="home-sideCard__header">
+              <h4 className="home-sideCard__header-title">내 정보</h4>
+            </div>
+            <div className="home-sideCard__body">
+              {isLoggedIn && detailedUserInfo ? (
+                <>
+                  <div className="home-userInfo__row">
+                    <span className="home-userInfo__label">이름</span>
+                    <span className="home-userInfo__value">
+                      {detailedUserInfo.username}
+                    </span>
+                  </div>
+                  <div className="home-userInfo__row">
+                    <span className="home-userInfo__label">이메일</span>
+                    <span
+                      className="home-userInfo__value"
+                      style={{ fontSize: 12 }}
+                    >
+                      {detailedUserInfo.email}
+                    </span>
+                  </div>
+                  <button
+                    className="home-shopBtn"
+                    onClick={() => navigate('/mypage')}
+                  >
+                    마이페이지 바로가기
+                  </button>
+                </>
+              ) : (
+                <>
+                  <p style={{ fontSize: 13, color: '#888', marginBottom: 12 }}>
+                    로그인 후 이용하세요
+                  </p>
+                  <button
+                    className="home-chatBtn"
+                    onClick={() => navigate('/login')}
+                  >
+                    로그인
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* Chat */}
+          <div className="home-sideCard">
+            <div className="home-sideCard__header">
+              <h4 className="home-sideCard__header-title">실시간 상담</h4>
+            </div>
+            <div className="home-sideCard__body">
+              <div style={{ fontSize: 36, marginBottom: 8 }}>🤖</div>
+              <p style={{ fontSize: 13, color: '#666', margin: '0 0 4px' }}>
+                병역 관련 궁금한 사항을
+              </p>
+              <p style={{ fontSize: 13, color: '#666', margin: '0 0 12px' }}>
+                AI에게 바로 물어보세요
+              </p>
+              <button
+                className="home-chatBtn"
+                onClick={() => navigate('/chat')}
+              >
+                상담 시작하기
+              </button>
+            </div>
+          </div>
+
+          {/* Shop */}
+          <div className="home-sideCard">
+            <div className="home-sideCard__header">
+              <h4 className="home-sideCard__header-title">군장용품 구매</h4>
+            </div>
+            <div className="home-sideCard__body">
+              <p style={{ fontSize: 13, color: '#666', margin: '0 0 12px' }}>
+                입영 전 필요한 물품을
+                <br />
+                미리 준비하세요
+              </p>
+              <button
+                className="home-shopBtn"
+                onClick={() => navigate('/products')}
+              >
+                상품 보러가기
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   );
-}
-
-const styles = {
-  container: {
-    padding: "40px",
-    width: "inherit",
-    backgroundColor: "#f5f7fb",
-    minHeight: "100vh",
-    color: "#213547",
-  } as const,
-
-  hero: {
-    textAlign: "center" as const,
-    marginBottom: "40px",
-  } as const,
-
-  title: {
-    fontSize: "32px",
-    fontWeight: "700",
-    marginBottom: "20px",
-  } as const,
-
-  avatarWrap: {
-    width: "44px",
-    height: "44px",
-    borderRadius: "999px",
-    overflow: "hidden",
-    border: "1px solid #e5e7ef",
-    backgroundColor: "#f5f5f7",
-    display: "inline-flex",
-    alignItems: "center",
-    justifyContent: "center",
-    flex: "0 0 auto",
-  } as const,
-
-  avatarImg: {
-    width: "100%",
-    height: "100%",
-    objectFit: "cover" as const,
-  } as const,
-
-  avatarFallback: {
-    fontSize: "16px",
-    fontWeight: "700",
-    color: "#4b5565",
-  } as const,
-
-  searchBox: {
-    display: "flex",
-    justifyContent: "center",
-    gap: "8px",
-    flexWrap: "wrap" as const,
-  } as const,
-
-  input: {
-    width: "min(400px, 100%)",
-    borderRadius: "8px",
-    border: "1px solid #ccc",
-  } as const,
-
-  searchBtn: {
-    borderRadius: "8px",
-    backgroundColor: "#4b6bff",
-    color: "white",
-    border: "none",
-    cursor: "pointer",
-  } as const,
-
-  cardGrid: {
-    gap: "20px",
-    marginBottom: "40px",
-    width: "100%",
-  } as const,
-
-  card: {
-    backgroundColor: "white",
-    padding: "20px",
-    borderRadius: "12px",
-    boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
-  } as const,
-
-  cardCenter: {
-    backgroundColor: "white",
-    padding: "20px",
-    borderRadius: "12px",
-    boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
-    textAlign: "center" as const,
-  } as const,
-
-  robotIcon: {
-    fontSize: "40px",
-    margin: "16px 0",
-  } as const,
-
-  primaryBtn: {
-    backgroundColor: "#4b6bff",
-    color: "white",
-    border: "none",
-    padding: "10px 16px",
-    borderRadius: "8px",
-    cursor: "pointer",
-  } as const,
-
-  bigText: {
-    fontSize: "28px",
-    fontWeight: "bold",
-  } as const,
-
-  ctaButton: {
-    backgroundColor: "#4b6bff",
-    color: "white",
-    padding: "14px 28px",
-    borderRadius: "10px",
-    border: "none",
-    fontSize: "16px",
-    cursor: "pointer",
-  } as const,
-
-  cardBtn: {
-    backgroundColor: "#4b6bff",
-    color: "white",
-    border: "none",
-    padding: "8px 16px",
-    borderRadius: "6px",
-    cursor: "pointer",
-    fontSize: "13px",
-    fontWeight: "600",
-    marginTop: "8px",
-  } as const,
-
-  noticeSection: {
-    backgroundColor: "white",
-    padding: "20px",
-    borderRadius: "12px",
-    boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
-    marginBottom: "40px",
-  } as const,
-
-  sectionTitle: {
-    fontSize: "18px",
-    fontWeight: "700",
-    marginBottom: "16px",
-    color: "#222",
-    margin: "0 0 16px 0",
-  } as const,
-
-  noticeList: {
-    display: "flex",
-    flexDirection: "column" as const,
-    gap: "10px",
-    marginBottom: "12px",
-  } as const,
-
-  noticeItem: {
-    padding: "12px",
-    borderRadius: "8px",
-    border: "1px solid #eee",
-    backgroundColor: "#f9fafb",
-    cursor: "pointer",
-    transition: "all 0.2s ease",
-  } as const,
-
-  noticeTitle: {
-    fontSize: "14px",
-    fontWeight: "600",
-    margin: "0 0 6px 0",
-    color: "#222",
-  } as const,
-
-  noticePreview: {
-    fontSize: "12px",
-    color: "#666",
-    margin: "0 0 6px 0",
-    lineHeight: "1.4",
-  } as const,
-
-  noticeDate: {
-    fontSize: "11px",
-    color: "#999",
-    margin: "0",
-  } as const
 }

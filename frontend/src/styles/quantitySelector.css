@@ -1,18 +1,30 @@
 .qty-selector {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin: 16px 0;
+  gap: 10px;
+  margin: 14px 0;
 }
 
 .qty-btn {
   width: 36px;
   height: 36px;
-  border-radius: 6px;
-  border: 1px solid #ddd;
+  border-radius: 3px;
+  border: 1px solid #CCCCCC;
   background: #fff;
-  font-size: 20px;
+  font-size: 18px;
+  font-weight: 700;
   cursor: pointer;
+  color: #003087;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s, border-color 0.2s;
+  font-family: inherit;
+}
+
+.qty-btn:hover:not(:disabled) {
+  border-color: #003087;
+  background: #EEF4FF;
 }
 
 .qty-btn:disabled {
@@ -21,8 +33,16 @@
 }
 
 .qty-value {
-  width: 40px;
+  width: 44px;
   text-align: center;
-  font-size: 16px;
-  font-weight: 600;
+  font-size: 15px;
+  font-weight: 700;
+  color: #222;
+  border: 1px solid #ddd;
+  border-radius: 3px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
 }

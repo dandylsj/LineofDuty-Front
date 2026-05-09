@@ -7,59 +7,91 @@
   padding: clamp(16px, 5vw, 48px);
   display: flex;
   justify-content: center;
-  background: #f5f6fa;
-  min-height: calc(100dvh - 64px);
-  color: #213547;
+  background: #F4F5F7;
+  min-height: calc(100dvh - 76px);
+  color: #222;
 }
 
 .complete-card {
   max-width: 480px;
   width: 100%;
-  padding: 40px;
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
+  padding: 0;
+  border: 1px solid #e0e5ef;
+  border-radius: 4px;
   text-align: center;
   background: #fff;
+  overflow: hidden;
+  height: fit-content;
+}
+
+.complete-card__top-bar {
+  background: #003087;
+  height: 4px;
+}
+
+.complete-card__body {
+  padding: 40px 32px;
 }
 
 .check-icon {
-  font-size: 48px;
-  color: #2563eb;
-  margin-bottom: 16px;
+  font-size: 52px;
+  margin-bottom: 14px;
+}
+
+.complete-card h2 {
+  font-size: 20px;
+  font-weight: 800;
+  color: #003087;
+  margin: 0 0 10px;
 }
 
 .desc {
-  margin: 16px 0 32px;
-  color: #444;
+  margin: 10px 0 28px;
+  color: #666;
+  font-size: 14px;
+  line-height: 1.6;
 }
 
 .actions {
   display: flex;
-  gap: 12px;
+  gap: 10px;
   justify-content: center;
   flex-wrap: wrap;
 }
 
 .actions button {
-  padding: 12px 20px;
+  padding: 11px 20px;
   font-size: 14px;
+  font-weight: 700;
+  border-radius: 3px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background-color 0.2s;
 }
 
 .primary {
-  background: #2563eb;
+  background: #003087;
   color: white;
   border: none;
 }
 
+.primary:hover {
+  background: #002070;
+}
+
 .secondary {
   background: white;
-  border: 1px solid #ccc;
-  color:#646cff ;
+  border: 1px solid #003087;
+  color: #003087;
+}
+
+.secondary:hover {
+  background: #EEF4FF;
 }
 
 @media (max-width: 480px) {
-  .complete-card {
-    padding: 24px;
+  .complete-card__body {
+    padding: 28px 20px;
   }
 
   .actions {

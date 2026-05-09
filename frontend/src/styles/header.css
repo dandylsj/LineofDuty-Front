@@ -1,99 +1,222 @@
+/* ===== Top utility bar ===== */
+.gov-topbar {
+  background-color: #002070;
+  color: #ccd6f6;
+  font-size: 12px;
+  padding: 5px 24px;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0;
+}
+
+.gov-topbar a,
+.gov-topbar button {
+  color: #ccd6f6;
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 400;
+  background: none;
+  border: none;
+  padding: 0 10px;
+  cursor: pointer;
+  border-right: 1px solid #3a4f80;
+  line-height: 1.4;
+  font-family: inherit;
+}
+.gov-topbar a:last-child,
+.gov-topbar button:last-child {
+  border-right: none;
+}
+.gov-topbar a:hover,
+.gov-topbar button:hover {
+  color: #fff;
+  text-decoration: none;
+  background: none;
+}
+
+/* ===== Main header ===== */
 .app-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 24px;
-  gap: 16px;
-  flex-wrap: wrap;
-  background-color:#fff;
+  padding: 0 24px;
+  background-color: #003087;
+  height: 72px;
+  border-bottom: 4px solid #C8102E;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
 }
 
 .app-header a {
-  color: #213547;
+  color: #fff;
+  text-decoration: none;
+}
+.app-header a:hover {
+  color: #ccd6f6;
   text-decoration: none;
 }
 
-.app-header a:hover {
-  color: #4a6cf7;
-}
-
+/* Logo */
 .app-logo {
-  font-weight: 700;
-  font-size: 18px;
+  font-weight: 800;
+  font-size: 20px;
   white-space: nowrap;
+  flex: 0 0 auto;
 }
 
+.app-logo > a {
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 20px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.app-logo > a:hover {
+  color: #ccd6f6;
+}
+
+.logo {
+  max-width: 36px;
+  max-height: 36px;
+  display: flex;
+  align-items: center;
+}
+
+.logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
+}
+
+/* Nav */
 .app-nav {
   display: flex;
-  gap: 16px;
-  flex-wrap: wrap;
+  align-items: stretch;
+  height: 72px;
+  gap: 0;
 }
 
-/* Header tabs */
 .app-nav a {
-  font-size: 15px;
+  color: #d0deff;
+  text-decoration: none;
+  font-size: 14px;
   font-weight: 600;
-  line-height: 1.2;
-  padding: 6px 4px;
-  border-bottom: 2px solid transparent;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  height: 100%;
+  border-bottom: 3px solid transparent;
+  white-space: nowrap;
+  transition: color 0.2s, border-bottom-color 0.2s, background-color 0.2s;
 }
 
 .app-nav a:hover {
-  border-bottom-color: #4a6cf7;
+  color: #fff;
+  background-color: rgba(255,255,255,0.1);
+  border-bottom-color: #C8102E;
+  text-decoration: none;
 }
 
+/* Auth area */
 .app-auth {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 0;
   white-space: nowrap;
 }
 
+.app-auth a {
+  font-size: 13px;
+  font-weight: 600;
+  color: #ccd6f6;
+  padding: 0 12px;
+  border-right: 1px solid rgba(255,255,255,0.2);
+}
+
+.app-auth a:hover {
+  color: #fff;
+  text-decoration: none;
+}
+
 .app-logoutBtn {
-  padding: 0;
+  padding: 0 12px;
   margin: 0;
   border: none;
   background: transparent;
   cursor: pointer;
-  color: #4a6cf7;
+  color: #ccd6f6;
   font: inherit;
-  background: none;
+  font-size: 13px;
+  font-weight: 600;
+  transition: color 0.2s;
+}
+.app-logoutBtn:hover {
+  color: #fff;
+  background: transparent;
+}
+
+.header-login-link {
+  font-size: 13px;
+  font-weight: 600;
+  color: #ccd6f6 !important;
+}
+.header-login-link:hover {
+  color: #fff !important;
+}
+
+@media (max-width: 900px) {
+  .app-nav a {
+    padding: 0 10px;
+    font-size: 13px;
+  }
 }
 
 @media (max-width: 768px) {
+  .gov-topbar {
+    display: none;
+  }
+
   .app-header {
+    flex-wrap: wrap;
+    height: auto;
     padding: 12px 16px;
-    gap: 12px;
+    gap: 8px;
     position: sticky;
-    top:0;
-    left:0;
-    right:0;
-    z-index: 1000;
-    background-color: #fff;
+    top: 0;
   }
 
   .app-nav {
     width: 100%;
-    gap: 12px;
+    height: auto;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    gap: 0;
+    border-top: 1px solid rgba(255,255,255,0.15);
+    padding-top: 4px;
+  }
+
+  .app-nav a {
+    padding: 8px 10px;
+    height: auto;
+    font-size: 13px;
+    border-bottom: 2px solid transparent;
+    flex-shrink: 0;
   }
 }
 
 @media (max-width: 480px) {
-  .app-nav {
-    gap: 10px;
-    font-size: 14px;
-    flex-direction:row;
-    justify-content:flex-start;
+  .app-nav a {
+    font-size: 12px;
+    padding: 8px 8px;
   }
 
-  .app-nav a {
-    font-size: 14px;
-    padding: 6px 2px;
-  }
   .app-auth {
-    flex-direction:row;
-    justify-content:center;
-      gap: 10px;
-      font-size: 14px;
+    font-size: 12px;
   }
 }

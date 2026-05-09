@@ -1,45 +1,134 @@
+/* ===== Government Footer ===== */
 .app-footer {
-  border-top: 1px solid #ddd;
-  background-color: #ffffff;
-  color: #213547;
+  background-color: #1a2a4a;
+  color: #aab4cc;
+  margin-top: 0;
+}
+
+.app-footer__top {
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  padding: 32px 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1fr 1fr;
+  gap: 32px;
+}
+
+.app-footer__brand {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.app-footer__brand-name {
+  font-size: 18px;
+  font-weight: 800;
+  color: #fff;
+  margin: 0;
+}
+
+.app-footer__brand-desc {
+  font-size: 12px;
+  line-height: 1.7;
+  color: #8898b8;
+  margin: 0;
+}
+
+.app-footer__col-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 12px 0;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.app-footer__col-links {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.app-footer__col-links a {
+  font-size: 12px;
+  color: #8898b8;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.app-footer__col-links a:hover {
+  color: #ccd6f6;
+  text-decoration: none;
+}
+
+/* Bottom bar */
+.app-footer__bottom {
+  background-color: #111e36;
+  padding: 14px 24px;
 }
 
 .app-footer__inner {
-  max-width: 1000px;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 18px 24px;
-  text-align: center;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .app-footer__notice {
-  margin: 0 0 6px 0;
-  font-size: 13px;
-  font-weight: 600;
+  margin: 0;
+  font-size: 12px;
+  color: #5a6a88;
 }
 
 .app-footer__links {
   display: inline-flex;
-  gap: 10px;
+  gap: 0;
   align-items: center;
   font-size: 12px;
 }
 
 .app-footer__links a {
-  color: #4a6cf7;
+  color: #6a7a98;
   text-decoration: none;
   font-weight: 600;
+  padding: 0 10px;
+  border-right: 1px solid #2a3a58;
+  transition: color 0.2s;
 }
-
+.app-footer__links a:last-child {
+  border-right: none;
+}
 .app-footer__links a:hover {
-  text-decoration: underline;
+  color: #ccd6f6;
+  text-decoration: none;
 }
 
 .app-footer__sep {
-  color: #999;
+  color: #2a3a58;
+}
+
+@media (max-width: 768px) {
+  .app-footer__top {
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    padding: 24px 16px;
+  }
 }
 
 @media (max-width: 480px) {
+  .app-footer__top {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
   .app-footer__inner {
-    padding: 16px;
+    flex-direction: column;
+    align-items: flex-start;
   }
 }

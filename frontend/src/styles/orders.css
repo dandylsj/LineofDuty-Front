@@ -4,40 +4,83 @@
 }
 
 .orders-page {
-  padding: clamp(16px, 4vw, 24px);
-  max-width: 900px;
+  padding: clamp(16px, 4vw, 32px);
+  max-width: 1000px;
   margin: 0 auto;
-  background: #f5f6fa;
-  min-height: calc(100dvh - 64px);
-  color: #213547;
+  background: #F4F5F7;
+  min-height: calc(100dvh - 76px);
+  color: #222;
+}
+
+.orders-title-bar {
+  background: #fff;
+  border: 1px solid #e0e5ef;
+  border-left: 4px solid #003087;
+  border-radius: 4px;
+  padding: 14px 18px;
+  margin-bottom: 20px;
+  font-size: 18px;
+  font-weight: 800;
+  color: #003087;
 }
 
 .orders-title {
-  font-size: 22px;
-  margin-bottom: 16px;
-  color: #333;
+  font-size: 18px;
+  font-weight: 800;
+  color: #003087;
+  margin: 0;
 }
 
 .orders-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  display: flex;
+  flex-direction: column;
   gap: 12px;
 }
 
 .orders-card {
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  padding: 16px;
+  border: 1px solid #e0e5ef;
+  border-radius: 4px;
+  padding: 0;
   background: #fff;
-  color: #111;
+  color: #222;
+  overflow: hidden;
+}
+
+.orders-card__header {
+  background: #F8FAFF;
+  padding: 10px 16px;
+  border-bottom: 1px solid #e0e5ef;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.orders-card__id {
+  font-size: 12px;
+  font-weight: 700;
+  color: #003087;
+}
+
+.orders-card__date {
+  font-size: 12px;
+  color: #888;
+}
+
+.orders-card__body {
+  padding: 14px 16px;
 }
 
 .orders-row {
   display: flex;
   justify-content: space-between;
   gap: 12px;
-  margin-bottom: 8px;
-  color: #222;
+  margin-bottom: 6px;
+  color: #333;
+  font-size: 13px;
+}
+
+.orders-row:last-child {
+  margin-bottom: 0;
 }
 
 .orders-row span {
@@ -47,16 +90,48 @@
   white-space: nowrap;
 }
 
+.orders-label {
+  color: #888;
+  font-weight: 600;
+  flex: 0 0 auto;
+}
+
+.orders-value {
+  font-weight: 500;
+  color: #222;
+  text-align: right;
+}
+
 .orders-muted {
-  color: #666;
+  color: #888;
 }
 
 .orders-error {
-  color: #c33;
+  color: #C8102E;
+  font-size: 13px;
+  padding: 8px 10px;
+  background: #fff0f2;
+  border-left: 3px solid #C8102E;
+  border-radius: 2px;
+}
+
+.orders-empty {
+  text-align: center;
+  padding: 60px 24px;
+  color: #aaa;
+  font-size: 14px;
+  background: #fff;
+  border: 1px solid #e0e5ef;
+  border-radius: 4px;
 }
 
 @media (max-width: 480px) {
-  .orders-list {
-    grid-template-columns: 1fr;
+  .orders-row {
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .orders-value {
+    text-align: left;
   }
 }

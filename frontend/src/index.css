@@ -1,26 +1,43 @@
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  --gov-navy: #003087;
+  --gov-navy-dark: #002070;
+  --gov-navy-light: #1A5276;
+  --gov-blue: #0050A0;
+  --gov-blue-light: #EEF4FF;
+  --gov-red: #C8102E;
+  --gov-bg: #F4F5F7;
+  --gov-white: #FFFFFF;
+  --gov-text: #222222;
+  --gov-text-mid: #444444;
+  --gov-text-light: #777777;
+  --gov-border: #DDDDDD;
+  --gov-border-light: #EEEEEE;
+
+  font-family: 'Malgun Gothic', '맑은 고딕', AppleGothic, 'Noto Sans KR', system-ui, sans-serif;
   line-height: 1.5;
   font-weight: 400;
-  width:100%;
-  height:100%;
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: rgb(245, 247, 251);
-
+  width: 100%;
+  height: 100%;
+  color: var(--gov-text);
+  background-color: var(--gov-bg);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
 a {
   font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
+  color: var(--gov-navy);
+  text-decoration: none;
 }
 a:hover {
-  color: #535bf2;
+  color: var(--gov-blue);
+  text-decoration: underline;
 }
 
 body {
@@ -29,7 +46,8 @@ body {
   min-width: 320px;
   min-height: 100vh;
   width: 100%;
-  height: 100%;
+  background-color: var(--gov-bg);
+  color: var(--gov-text);
 }
 
 html {
@@ -39,41 +57,64 @@ html {
   padding: 0;
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+h1, h2, h3, h4, h5, h6 {
+  color: var(--gov-text);
+  margin-top: 0;
 }
 
+h1 { font-size: 2em; line-height: 1.2; }
+
 button {
-  border-radius: 8px;
+  border-radius: 4px;
   border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
+  padding: 0.5em 1.2em;
+  font-size: 0.9em;
+  font-weight: 600;
   font-family: inherit;
-  background-color: #1a1a1a;
+  background-color: var(--gov-navy);
+  color: white;
   cursor: pointer;
-  transition: border-color 0.25s;
+  transition: background-color 0.2s, border-color 0.2s;
 }
 button:hover {
-  border-color: #646cff;
+  background-color: var(--gov-navy-dark);
 }
 button:focus,
 button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+  outline: 2px solid var(--gov-navy);
+  outline-offset: 2px;
 }
-.app-logo > a {display:flex;flex-direction:row;line-height:40px;font-weight:800;font-size:28px;}
-.logo {display:flex;max-width:40px;margin-right:8px;max-height:40px;}
-.logo img {width:100%;height:100%;object-fit:contain;}
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
+
+input, textarea, select {
+  font-family: inherit;
+  color: var(--gov-text);
+}
+
+.app-logo > a {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  line-height: 1;
+  font-weight: 800;
+  font-size: 22px;
+  color: var(--gov-navy);
+  text-decoration: none;
+}
+.logo {
+  display: flex;
+  max-width: 36px;
+  max-height: 36px;
+  margin-right: 8px;
+}
+.logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+#root {
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+  text-align: left;
 }

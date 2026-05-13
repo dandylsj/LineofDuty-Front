@@ -5,7 +5,12 @@
   font-size: 12px;
   padding: 5px 24px;
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.gov-topbar__links {
+  display: flex;
   align-items: center;
   gap: 0;
 }
@@ -24,8 +29,8 @@
   line-height: 1.4;
   font-family: inherit;
 }
-.gov-topbar a:last-child,
-.gov-topbar button:last-child {
+.gov-topbar__links a:last-child,
+.gov-topbar__links button:last-child {
   border-right: none;
 }
 .gov-topbar a:hover,
@@ -33,6 +38,14 @@
   color: #fff;
   text-decoration: none;
   background: none;
+}
+
+.gov-topbar__welcome {
+  font-size: 12px;
+  font-weight: 600;
+  color: #a8d8ff;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
 }
 
 /* ===== Main header ===== */
@@ -47,6 +60,7 @@
   position: sticky;
   top: 0;
   z-index: 1000;
+  gap: 16px;
 }
 
 .app-header a {
@@ -100,6 +114,7 @@
   align-items: stretch;
   height: 72px;
   gap: 0;
+  flex: 1;
 }
 
 .app-nav a {
@@ -107,7 +122,7 @@
   text-decoration: none;
   font-size: 14px;
   font-weight: 600;
-  padding: 0 16px;
+  padding: 0 14px;
   display: flex;
   align-items: center;
   height: 100%;
@@ -123,6 +138,58 @@
   text-decoration: none;
 }
 
+/* Header right: search + auth */
+.app-header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 0 0 auto;
+}
+
+/* Compact search bar */
+.app-search {
+  display: flex;
+  align-items: center;
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.25);
+  border-radius: 20px;
+  overflow: hidden;
+  transition: background 0.2s, border-color 0.2s;
+}
+.app-search:focus-within {
+  background: rgba(255,255,255,0.2);
+  border-color: rgba(255,255,255,0.5);
+}
+
+.app-searchInput {
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #fff;
+  font-size: 13px;
+  padding: 7px 12px;
+  width: 160px;
+  font-family: inherit;
+}
+.app-searchInput::placeholder {
+  color: rgba(255,255,255,0.5);
+}
+
+.app-searchBtn {
+  background: transparent;
+  border: none;
+  color: rgba(255,255,255,0.7);
+  padding: 7px 10px 7px 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  transition: color 0.2s;
+}
+.app-searchBtn:hover {
+  color: #fff;
+  background: transparent;
+}
+
 /* Auth area */
 .app-auth {
   display: flex;
@@ -135,7 +202,7 @@
   font-size: 13px;
   font-weight: 600;
   color: #ccd6f6;
-  padding: 0 12px;
+  padding: 0 10px;
   border-right: 1px solid rgba(255,255,255,0.2);
 }
 
@@ -145,7 +212,7 @@
 }
 
 .app-logoutBtn {
-  padding: 0 12px;
+  padding: 0 10px;
   margin: 0;
   border: none;
   background: transparent;
@@ -165,14 +232,28 @@
   font-size: 13px;
   font-weight: 600;
   color: #ccd6f6 !important;
+  border-right: none !important;
 }
 .header-login-link:hover {
   color: #fff !important;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1100px) {
+  .app-searchInput {
+    width: 120px;
+  }
   .app-nav a {
     padding: 0 10px;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 900px) {
+  .app-search {
+    display: none;
+  }
+  .app-nav a {
+    padding: 0 8px;
     font-size: 13px;
   }
 }
@@ -207,6 +288,10 @@
     font-size: 13px;
     border-bottom: 2px solid transparent;
     flex-shrink: 0;
+  }
+
+  .app-header-right {
+    gap: 8px;
   }
 }
 

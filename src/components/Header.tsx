@@ -1,35 +1,62 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/userAuth";
+import { useEffect, useState } from "react";
+import { userApi } from "../api/userApi";
 import "../styles/header.css";
 import logo from "../assets/logo.png";
 
 export default function Header() {
-  const { isLoggedIn, isAdmin, logout } = useAuth();
+  const { isLoggedIn, isAdmin, logout, userId } = useAuth();
   const navigate = useNavigate();
+  const [searchKeyword, setSearchKeyword] = useState('');
+  const [username, setUsername] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (isLoggedIn && userId) {
+      userApi
+        .getProfile(userId)
+        .then((res) => setUsername(res.data?.data?.username || null))
+        .catch(() => {});
+    } else {
+      setUsername(null);
+    }
+  }, [isLoggedIn, userId]);
 
   const handleLogout = () => {
     logout();
     navigate("/login");
   };
 
+  const handleSearch = () => {
+    const q = searchKeyword.trim();
+    if (!q) return;
+    navigate(`/search?q=${encodeURIComponent(q)}`);
+    setSearchKeyword('');
+  };
+
   return (
     <>
       <div className="gov-topbar">
-        <Link to="/">홈</Link>
-        <Link to="/notices">공지사항</Link>
-        <Link to="/qna">민원/QnA</Link>
-        {isLoggedIn ? (
-          <>
-            <Link to="/mypage">마이페이지</Link>
-            <button onClick={handleLogout}>로그아웃</button>
-          </>
-        ) : (
-          <>
-            <Link to="/login">로그인</Link>
-            <Link to="/signup">회원가입</Link>
-          </>
+        <div className="gov-topbar__links">
+          <Link to="/">홈</Link>
+          <Link to="/notices">공지사항</Link>
+          <Link to="/qna">민원/QnA</Link>
+          {isLoggedIn ? (
+            <>
+              <Link to="/mypage">마이페이지</Link>
+              <button onClick={handleLogout}>로그아웃</button>
+            </>
+          ) : (
+            <>
+              <Link to="/login">로그인</Link>
+              <Link to="/signup">회원가입</Link>
+            </>
+          )}
+          {isLoggedIn && isAdmin && <Link to="/admin">관리자</Link>}
+        </div>
+        {isLoggedIn && username && (
+          <span className="gov-topbar__welcome">👤 {username}님 환영합니다</span>
         )}
-        {isLoggedIn && isAdmin && <Link to="/admin">관리자</Link>}
       </div>
 
       <header className="app-header">
@@ -51,17 +78,32 @@ export default function Header() {
           {isLoggedIn && isAdmin && <Link to="/admin">관리자</Link>}
         </nav>
 
-        <div className="app-auth">
-          {isLoggedIn ? (
-            <>
-              <Link to="/mypage">마이페이지</Link>
-              <button onClick={handleLogout} className="app-logoutBtn">
-                로그아웃
-              </button>
-            </>
-          ) : (
-            <Link to="/login" className="header-login-link">로그인</Link>
-          )}
+        <div className="app-header-right">
+          <div className="app-search">
+            <input
+              className="app-searchInput"
+              placeholder="검색어를 입력하세요"
+              value={searchKeyword}
+              onChange={(e) => setSearchKeyword(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') handleSearch(); }}
+            />
+            <button className="app-searchBtn" onClick={handleSearch}>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+            </button>
+          </div>
+
+          <div className="app-auth">
+            {isLoggedIn ? (
+              <>
+                <Link to="/mypage">마이페이지</Link>
+                <button onClick={handleLogout} className="app-logoutBtn">로그아웃</button>
+              </>
+            ) : (
+              <Link to="/login" className="header-login-link">로그인</Link>
+            )}
+          </div>
         </div>
       </header>
     </>

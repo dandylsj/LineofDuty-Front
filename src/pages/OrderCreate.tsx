@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { orderApi } from "../api/orderApi";
 import Header from "../components/Header";
@@ -6,7 +6,7 @@ import { addOrderToHistory } from "../store/orderHistory";
 import { setPendingPaymentV2 } from "../store/pendingPayment";
 import "../styles/orderCreate.css";
 
-type BulkCheckoutItem = {
+type BulkItem = {
   product: {
     productId: number;
     name: string;
@@ -18,66 +18,40 @@ type BulkCheckoutItem = {
   quantity: number;
 };
 
-type BulkCheckoutPayload = {
-  index: number;
-  items: BulkCheckoutItem[];
-};
-
 export default function OrderCreate() {
   const { state } = useLocation();
   const navigate = useNavigate();
   const [isPaying, setIsPaying] = useState(false);
 
-  const BULK_CHECKOUT_KEY = "pentagon_bulk_checkout_v1";
-
-  const bulk: BulkCheckoutPayload | null = useMemo(() => {
-    const raw = sessionStorage.getItem(BULK_CHECKOUT_KEY);
-    if (!raw) return null;
-    try {
-      const parsed = JSON.parse(raw) as Partial<BulkCheckoutPayload>;
-      if (!parsed || !Array.isArray(parsed.items) || parsed.items.length === 0)
-        return null;
-      const idx =
-        typeof parsed.index === "number" && Number.isFinite(parsed.index)
-          ? parsed.index
-          : 0;
-      const safeIndex = Math.min(Math.max(0, idx), parsed.items.length - 1);
-      return { index: safeIndex, items: parsed.items as BulkCheckoutItem[] };
-    } catch {
-      return null;
-    }
-  }, []);
-
   const fromState = (state as any) || {};
 
-  const product =
-    fromState.product ?? bulk?.items?.[Number(bulk.index)]?.product ?? null;
-  const quantity =
-    fromState.quantity ?? bulk?.items?.[Number(bulk.index)]?.quantity ?? null;
+  // 단건 주문 or 전체 주문 구분
+  const isBulk = fromState.isBulk === true && Array.isArray(fromState.items) && fromState.items.length > 0;
+  const bulkItems: BulkItem[] = isBulk ? fromState.items : [];
+
+  // 단건일 때 상품 정보
+  const singleProduct = fromState.product ?? null;
+  const singleQuantity = fromState.quantity ?? null;
+
+  // 총 금액
+  const totalPrice = isBulk
+    ? bulkItems.reduce((sum, it) => sum + it.product.price * it.quantity, 0)
+    : (singleProduct?.price ?? 0) * (singleQuantity ?? 0);
+
+  // 대표 상품명 (토스 결제창 표시용)
+  const orderName = isBulk
+    ? bulkItems.length === 1
+      ? bulkItems[0].product.name
+      : `${bulkItems[0].product.name} 외 ${bulkItems.length - 1}건`
+    : singleProduct?.name ?? "";
 
   useEffect(() => {
-    if (!product || !quantity) {
-      // avoid navigate during render
+    if (!isBulk && (!singleProduct || !singleQuantity)) {
       setTimeout(() => navigate("/products"), 0);
     }
-  }, [product, quantity, navigate]);
+  }, [isBulk, singleProduct, singleQuantity, navigate]);
 
-  if (!product || !quantity) return null;
-
-  const isBulkFlow =
-    !!bulk &&
-    Number.isFinite(Number(bulk.index)) &&
-    Array.isArray(bulk.items) &&
-    bulk.items.length > 0 &&
-    bulk.items[Number(bulk.index)]?.product?.productId === product.productId;
-
-  const bulkTotalCount = isBulkFlow ? bulk.items.length : 0;
-  const bulkCurrentIndex = isBulkFlow ? Number(bulk.index) : 0;
-  const bulkRemaining = isBulkFlow
-    ? bulk.items.slice(bulkCurrentIndex + 1)
-    : [];
-
-  const totalPrice = (product.price ?? 0) * quantity;
+  if (!isBulk && (!singleProduct || !singleQuantity)) return null;
 
   const pickNumber = (value: unknown): number | null => {
     if (typeof value === "number" && Number.isFinite(value)) return value;
@@ -88,29 +62,18 @@ export default function OrderCreate() {
     return null;
   };
 
-  const pickString = (value: unknown): string | null =>
-    typeof value === "string" && value.trim() !== "" ? value : null;
-
-  const pickStringOrNumber = (value: unknown): string | null => {
-    const s = pickString(value);
-    if (s) return s;
-    if (typeof value === "number" && Number.isFinite(value)) return String(value);
-    return null;
-  };
-
   const extractOrderNumber = (obj: any): string | null => {
     if (!obj) return null;
-    return (
-      pickStringOrNumber(obj.orderNumber) ||
-      pickStringOrNumber(obj.order_number) ||
-      pickStringOrNumber(obj.orderNo) ||
-      pickStringOrNumber(obj.order_no) ||
-      pickStringOrNumber(obj.orderNum) ||
-      pickStringOrNumber(obj.order_num) ||
-      pickStringOrNumber(obj?.order?.orderNumber) ||
-      pickStringOrNumber(obj?.order?.order_number) ||
-      null
-    );
+    const candidates = [
+      obj.orderNumber, obj.order_number, obj.orderNo,
+      obj.order_no, obj.orderNum, obj.order_num,
+      obj?.order?.orderNumber, obj?.order?.order_number,
+    ];
+    for (const v of candidates) {
+      if (typeof v === "string" && v.trim()) return v;
+      if (typeof v === "number" && Number.isFinite(v)) return String(v);
+    }
+    return null;
   };
 
   const handlePayment = async () => {
@@ -118,47 +81,68 @@ export default function OrderCreate() {
     setIsPaying(true);
 
     try {
-      const orderRes = await orderApi.createOrder({
-        productId: product.productId,
-        quantity,
-      });
+      let finalOrderPk: number | null = null;
+      let finalAmount = totalPrice;
+      let tossOrderId: string | null = null;
 
-      const data = orderRes.data?.data;
-      if (!data) {
-        alert("주문 생성 응답이 올바르지 않습니다.");
-        setIsPaying(false);
-        return;
+      // 전체 결제: 모든 상품을 순서대로 createOrder (백엔드가 같은 주문서에 자동으로 추가)
+      // 단건 결제: 상품 하나만 createOrder
+      const itemsToOrder: BulkItem[] = isBulk
+        ? bulkItems
+        : [{ product: singleProduct, quantity: singleQuantity }];
+
+      for (const item of itemsToOrder) {
+        const orderRes = await orderApi.createOrder({
+          productId: item.product.productId,
+          quantity: item.quantity,
+        });
+
+        const data = orderRes.data?.data;
+        if (!data) {
+          alert("주문 생성 응답이 올바르지 않습니다.");
+          setIsPaying(false);
+          return;
+        }
+
+        const orderPk =
+          pickNumber((data as any).id) ??
+          pickNumber((data as any).orderId) ??
+          pickNumber((data as any).order_id);
+
+        if (!orderPk) {
+          alert("주문 정보를 확인할 수 없습니다.");
+          setIsPaying(false);
+          return;
+        }
+
+        // 마지막 응답의 totalPrice = 전체 합산 금액
+        finalOrderPk = orderPk;
+        finalAmount =
+          pickNumber((data as any).totalPrice) ??
+          pickNumber((data as any).total_price) ??
+          pickNumber((data as any).totalAmount) ??
+          pickNumber((data as any).total_amount) ??
+          totalPrice;
+
+        if (!tossOrderId) {
+          tossOrderId = extractOrderNumber(data);
+        }
       }
 
-      const orderPk =
-        pickNumber((data as any).id) ??
-        pickNumber((data as any).orderId) ??
-        pickNumber((data as any).order_id);
-
-      if (!orderPk) {
+      if (!finalOrderPk) {
         alert("주문 정보를 확인할 수 없습니다.");
         setIsPaying(false);
         return;
       }
 
-      addOrderToHistory(orderPk);
+      addOrderToHistory(finalOrderPk);
 
-      const amount =
-        pickNumber((data as any).totalPrice) ??
-        pickNumber((data as any).total_price) ??
-        pickNumber((data as any).totalAmount) ??
-        pickNumber((data as any).total_amount) ??
-        pickNumber((data as any).amount) ??
-        totalPrice;
-
-      let tossOrderId: string | null = extractOrderNumber(data);
-
+      // orderNumber가 없으면 getOrder로 조회
       if (!tossOrderId) {
         try {
-          const detailRes = await orderApi.getOrder(orderPk);
-          const detail = detailRes.data?.data;
-          tossOrderId = extractOrderNumber(detail);
-        } catch (err) {
+          const detailRes = await orderApi.getOrder(finalOrderPk);
+          tossOrderId = extractOrderNumber(detailRes.data?.data);
+        } catch {
           // ignore
         }
       }
@@ -166,16 +150,14 @@ export default function OrderCreate() {
       if (!tossOrderId) {
         alert(
           "주문번호(orderNumber)를 응답에서 찾지 못했습니다.\n" +
-            "토스 결제는 orderNumber가 반드시 필요합니다.\n" +
-            "현재 백엔드 /api/orders 응답에 orderNumber가 포함되어 있지 않아 결제를 진행할 수 없습니다.\n" +
-            "(createOrder/getOrder 응답 DTO에 orderNumber 필드 추가 필요)"
+          "백엔드 /api/orders 응답 DTO에 orderNumber 필드가 필요합니다."
         );
         setIsPaying(false);
         return;
       }
 
-      // success redirect에서 orderId(=tossOrderId)만 내려오므로, 주문 PK/금액을 저장해둠
-      setPendingPaymentV2(tossOrderId, { orderPk, amount });
+      // 결제 성공 후 처리를 위해 저장
+      setPendingPaymentV2(tossOrderId, { orderPk: finalOrderPk, amount: finalAmount });
 
       const tossPayments = (window as any).TossPayments(
         import.meta.env.VITE_TOSS_CLIENT_KEY
@@ -183,9 +165,9 @@ export default function OrderCreate() {
 
       try {
         await tossPayments.requestPayment("카드", {
-          amount,
+          amount: finalAmount,
           orderId: tossOrderId,
-          orderName: product.name,
+          orderName,
           successUrl: `${window.location.origin}/payments/success`,
           failUrl: `${window.location.origin}/payments/fail`,
         });
@@ -194,7 +176,7 @@ export default function OrderCreate() {
         alert(String(msg));
         setIsPaying(false);
       }
-    } catch (e) {
+    } catch {
       alert("결제 요청 실패");
       setIsPaying(false);
     }
@@ -207,72 +189,72 @@ export default function OrderCreate() {
         <h2 className="order-create-title">주문 확인</h2>
         <p className="order-create-subtitle">결제 전 주문 정보를 확인해주세요.</p>
 
-        {isBulkFlow && (
-          <div className="order-create-bulk-banner">
-            <div className="order-create-bulk-title">
-              전체 주문 진행중 ({bulkCurrentIndex + 1}/{bulkTotalCount})
-            </div>
-          </div>
-        )}
-
         <section className="order-create-card">
-          <div className="order-create-item">
-            <div className="order-create-thumb">
-              {product.productImageUrl ? (
-                <img
-                  src={product.productImageUrl}
-                  alt={product.name}
-                  loading="lazy"
-                />
-              ) : (
-                <div className="order-create-thumb-placeholder" />
-              )}
+          {/* 전체 결제: 모든 상품 목록 표시 */}
+          {isBulk ? (
+            <div className="order-create-bulk-list">
+              {bulkItems.map((it) => (
+                <div key={it.product.productId} className="order-create-item">
+                  <div className="order-create-thumb">
+                    {it.product.productImageUrl ? (
+                      <img src={it.product.productImageUrl} alt={it.product.name} loading="lazy" />
+                    ) : (
+                      <div className="order-create-thumb-placeholder" />
+                    )}
+                  </div>
+                  <div className="order-create-info">
+                    <h3 className="order-create-name">{it.product.name}</h3>
+                    {it.product.description && (
+                      <p className="order-create-desc">{it.product.description}</p>
+                    )}
+                    <div className="order-create-row">
+                      <span className="order-create-label">수량</span>
+                      <span className="order-create-value">{it.quantity}</span>
+                    </div>
+                    <div className="order-create-row">
+                      <span className="order-create-label">금액</span>
+                      <span className="order-create-value">
+                        {(it.product.price * it.quantity).toLocaleString()}원
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
-            <div className="order-create-info">
-              <h3 className="order-create-name">{product.name}</h3>
-              {product.description && (
-                <p className="order-create-desc">{product.description}</p>
-              )}
-
-              <div className="order-create-row">
-                <span className="order-create-label">수량</span>
-                <span className="order-create-value">{quantity}</span>
+          ) : (
+            /* 단건 결제: 상품 하나 표시 */
+            <div className="order-create-item">
+              <div className="order-create-thumb">
+                {singleProduct.productImageUrl ? (
+                  <img src={singleProduct.productImageUrl} alt={singleProduct.name} loading="lazy" />
+                ) : (
+                  <div className="order-create-thumb-placeholder" />
+                )}
               </div>
-              <div className="order-create-row">
-                <span className="order-create-label">상품 금액</span>
-                <span className="order-create-value">
-                  {(product.price ?? 0).toLocaleString()}원
-                </span>
+              <div className="order-create-info">
+                <h3 className="order-create-name">{singleProduct.name}</h3>
+                {singleProduct.description && (
+                  <p className="order-create-desc">{singleProduct.description}</p>
+                )}
+                <div className="order-create-row">
+                  <span className="order-create-label">수량</span>
+                  <span className="order-create-value">{singleQuantity}</span>
+                </div>
+                <div className="order-create-row">
+                  <span className="order-create-label">상품 금액</span>
+                  <span className="order-create-value">
+                    {(singleProduct.price ?? 0).toLocaleString()}원
+                  </span>
+                </div>
               </div>
-              <div className="order-create-row total">
-                <span className="order-create-label">총 결제금액</span>
-                <span className="order-create-total">
-                  {totalPrice.toLocaleString()}원
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {isBulkFlow && bulkRemaining.length > 0 && (
-            <div className="order-create-bulk-queue">
-              <div className="order-create-bulk-queue-title">
-                다음 결제 예정 ({bulkRemaining.length}개)
-              </div>
-              <ul className="order-create-bulk-queue-list">
-                {bulkRemaining.map((it) => (
-                  <li
-                    key={it.product.productId}
-                    className="order-create-bulk-queue-item"
-                  >
-                    <span className="name">{it.product.name}</span>
-                    <span className="meta">
-                      {it.quantity}개 · {(it.product.price * it.quantity).toLocaleString()}원
-                    </span>
-                  </li>
-                ))}
-              </ul>
             </div>
           )}
+
+          {/* 총 결제금액 */}
+          <div className="order-create-row total" style={{ padding: "16px 0 0", borderTop: "1px solid #e5e7ef" }}>
+            <span className="order-create-label">총 결제금액</span>
+            <span className="order-create-total">{totalPrice.toLocaleString()}원</span>
+          </div>
 
           <div className="order-create-actions">
             <button
@@ -287,7 +269,11 @@ export default function OrderCreate() {
               onClick={handlePayment}
               disabled={isPaying}
             >
-              {isPaying ? "결제 요청 중..." : "결제하기"}
+              {isPaying
+                ? isBulk
+                  ? "주문 처리 중..."
+                  : "결제 요청 중..."
+                : `${totalPrice.toLocaleString()}원 결제하기`}
             </button>
           </div>
         </section>

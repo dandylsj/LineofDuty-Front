@@ -16,36 +16,31 @@ export default function Cart() {
   const navigate = useNavigate();
   const [items, setItems] = useState<CartItem[]>([]);
 
-  const BULK_CHECKOUT_KEY = "pentagon_bulk_checkout_v1";
-
   useEffect(() => {
     setItems(loadCart());
   }, []);
 
   const total = getCartTotal(items);
 
+  // 전체 상품을 state로 넘겨서 OrderCreate에서 한 번에 결제
   const startBulkCheckout = () => {
     if (items.length === 0) return;
-
-    const payload = {
-      index: 0,
-      items: items.map((it) => ({
-        product: {
-          productId: it.productId,
-          name: it.name,
-          description: it.description,
-          price: it.price,
-          stock: it.stock,
-          productImageUrl: it.productImageUrl,
-        },
-        quantity: it.quantity,
-      })),
-    };
-
-    sessionStorage.setItem(BULK_CHECKOUT_KEY, JSON.stringify(payload));
-
-    const first = payload.items[0];
-    navigate("/orders/new", { state: { product: first.product, quantity: first.quantity } });
+    navigate("/orders/new", {
+      state: {
+        isBulk: true,
+        items: items.map((it) => ({
+          product: {
+            productId: it.productId,
+            name: it.name,
+            description: it.description,
+            price: it.price,
+            stock: it.stock,
+            productImageUrl: it.productImageUrl,
+          },
+          quantity: it.quantity,
+        })),
+      },
+    });
   };
 
   return (
@@ -126,7 +121,7 @@ export default function Cart() {
               </div>
               <div className="cart-summary-actions">
                 <button className="cart-btn" onClick={startBulkCheckout}>
-                  전체 주문하기(순차 결제)
+                  전체 결제하기
                 </button>
                 <button
                   className="cart-btn ghost"

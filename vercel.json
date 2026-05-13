@@ -2,7 +2,7 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "http://lsjyahoo.synology.me:8081/api/:path*"
+      "destination": "https://lsjyahoo.synology.me:8443/api/:path*"
     },
     {
       "source": "/(.*)",

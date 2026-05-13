@@ -42,6 +42,7 @@ export default function Login() {
       const res = await authApi.login({ email, password });
 
       const accessToken = res.data?.data?.accessToken;
+      const refreshToken = res.data?.data?.refreshToken;
       const username = res.data?.data?.username ?? res.data?.data?.userName;
       const userId = res.data?.data?.userId ?? res.data?.data?.userID ?? res.data?.data?.id;
 
@@ -51,6 +52,7 @@ export default function Login() {
       }
 
       localStorage.setItem("accessToken", accessToken);
+      if (refreshToken) localStorage.setItem("refreshToken", refreshToken);
       if (username) localStorage.setItem("username", username);
       if (userId) localStorage.setItem("userId", userId.toString());
       localStorage.setItem("email", email);

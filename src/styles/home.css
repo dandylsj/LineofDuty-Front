@@ -90,6 +90,20 @@
   transform: translateY(-1px);
 }
 
+/* 이미지 배너 어두운 오버레이 */
+.banner-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to right, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.2) 60%, transparent 100%);
+  z-index: 1;
+}
+
+/* 로딩 상태 */
+.banner-carousel--loading {
+  height: 420px;
+  background: #001a4d;
+}
+
 /* Decorative rings */
 .banner-deco {
   position: absolute;

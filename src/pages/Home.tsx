@@ -6,7 +6,44 @@ import { userApi } from '../api/userApi';
 import { weatherApi } from '../api/weatherApi';
 import { enlistmentApi } from '../api/enlistmentApi';
 import { noticeApi } from '../api/noticeApi';
+import { bannerApi } from '../api/bannerApi';
+import type { BannerResponse } from '../api/bannerApi';
 import '../styles/home.css';
+
+interface UserInfo {
+  username: string;
+  email: string;
+  profileImageUrl?: string;
+}
+
+interface WeatherInfo {
+  temperature?: number;
+  temp?: number;
+  skyStatus?: string;
+  description?: string;
+}
+
+interface ScheduleItem {
+  scheduleId?: number;
+  scheduledId?: number;
+  id?: number;
+  enlistmentDate?: string;
+  date?: string;
+  remainingSlots?: number;
+  remaining?: number;
+  weather?: { temp: number; description: string };
+}
+
+interface ScheduleData {
+  enlistmentResponse?: ScheduleItem | ScheduleItem[];
+  content?: ScheduleItem[];
+}
+
+interface NoticeItem {
+  id: number;
+  title: string;
+  createdAt: string;
+}
 
 const QUICK_SERVICES = [
   { icon: '📋', label: '입영 일정 조회', path: '/enlistment' },
@@ -21,129 +58,150 @@ const QUICK_SERVICES = [
   { icon: '🔍', label: '통합 검색', path: '/search' },
 ];
 
-const BANNERS = [
+// 배너 API 응답이 없을 때 보여줄 폴백 데이터
+const FALLBACK_BANNERS: BannerResponse[] = [
   {
-    bg: 'linear-gradient(120deg, #001a4d 0%, #003087 50%, #0050A0 100%)',
-    badge: '2024 입영 안내',
+    id: 0,
+    badge: '2026 입영 안내',
     title: '대한민국 국방의 의무',
     subtitle: '입영 일정부터 준비물까지\n병무청이 함께합니다',
-    action: '입영 일정 확인하기',
-    path: '/enlistment',
+    ctaText: '입영 일정 확인하기',
+    ctaPath: '/enlistment',
+    imageUrl: null,
     accentColor: '#C8102E',
-    emoji: '🎖️',
+    orderIndex: 0,
+    isActive: true,
+    createdAt: '',
+    updatedAt: '',
   },
   {
-    bg: 'linear-gradient(120deg, #0d2b0d 0%, #1e5c1a 50%, #2d7a27 100%)',
+    id: 1,
     badge: '군장용품 특가',
     title: '입영 준비, 이제 한 곳에서',
     subtitle: '군복·군화·생활용품까지\n최저가로 한번에 준비하세요',
-    action: '상품 보러가기',
-    path: '/products',
+    ctaText: '상품 보러가기',
+    ctaPath: '/products',
+    imageUrl: null,
     accentColor: '#4CAF50',
-    emoji: '🎒',
+    orderIndex: 1,
+    isActive: true,
+    createdAt: '',
+    updatedAt: '',
   },
   {
-    bg: 'linear-gradient(120deg, #0d0d2e 0%, #1a1a6a 50%, #2a2a99 100%)',
+    id: 2,
     badge: 'AI 실시간 상담',
     title: '병역 Q&A, 24시간 AI 상담',
     subtitle: '언제든지 병역 관련 궁금증을\nAI에게 바로 물어보세요',
-    action: '상담 시작하기',
-    path: '/chat',
+    ctaText: '상담 시작하기',
+    ctaPath: '/chat',
+    imageUrl: null,
     accentColor: '#7c4dff',
-    emoji: '🤖',
+    orderIndex: 2,
+    isActive: true,
+    createdAt: '',
+    updatedAt: '',
   },
-  {
-    bg: 'linear-gradient(120deg, #2a1500 0%, #5c3200 50%, #8a4c00 100%)',
-    badge: '최신 공지사항',
-    title: '병무청 주요 소식',
-    subtitle: '중요한 병역 관련 공지사항을\n빠르게 확인하세요',
-    action: '공지사항 보기',
-    path: '/notices',
-    accentColor: '#FF9800',
-    emoji: '📢',
-  },
-  {
-    bg: 'linear-gradient(120deg, #1a0033 0%, #3d0075 50%, #5a00aa 100%)',
-    badge: '연기 신청',
-    title: '온라인으로 간편하게',
-    subtitle: '복잡한 서류 없이\n온라인으로 연기 신청을 완료하세요',
-    action: '연기 신청하기',
-    path: '/deferments',
-    accentColor: '#E040FB',
-    emoji: '📝',
-  },
+];
+
+const BG_GRADIENTS = [
+  'linear-gradient(120deg, #001a4d 0%, #003087 50%, #0050A0 100%)',
+  'linear-gradient(120deg, #0d2b0d 0%, #1e5c1a 50%, #2d7a27 100%)',
+  'linear-gradient(120deg, #0d0d2e 0%, #1a1a6a 50%, #2a2a99 100%)',
+  'linear-gradient(120deg, #2a1500 0%, #5c3200 50%, #8a4c00 100%)',
+  'linear-gradient(120deg, #1a0033 0%, #3d0075 50%, #5a00aa 100%)',
 ];
 
 function BannerCarousel() {
   const navigate = useNavigate();
   const [current, setCurrent] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [banners, setBanners] = useState<BannerResponse[]>([]);
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const res = await bannerApi.getActiveBanners();
+        const data: BannerResponse[] = res.data?.data ?? [];
+        setBanners(data.length > 0 ? data : FALLBACK_BANNERS);
+      } catch {
+        setBanners(FALLBACK_BANNERS);
+      }
+    };
+    void load();
+  }, []);
+
+  const total = banners.length;
 
   const goTo = useCallback((index: number) => {
-    if (isAnimating) return;
+    if (isAnimating || total === 0) return;
     setIsAnimating(true);
     setCurrent(index);
     setTimeout(() => setIsAnimating(false), 500);
-  }, [isAnimating]);
+  }, [isAnimating, total]);
 
-  const prev = () => goTo((current - 1 + BANNERS.length) % BANNERS.length);
-  const next = useCallback(() => goTo((current + 1) % BANNERS.length), [current, goTo]);
+  const prev = () => goTo((current - 1 + total) % total);
+  const next = useCallback(() => goTo((current + 1) % total), [current, goTo, total]);
 
   useEffect(() => {
+    if (total === 0) return;
     const timer = setInterval(next, 5000);
     return () => clearInterval(timer);
-  }, [next]);
+  }, [next, total]);
 
-  const banner = BANNERS[current];
+  if (total === 0) return <div className="banner-carousel banner-carousel--loading" />;
+
+  const banner = banners[current];
+  const accent = banner.accentColor || '#C8102E';
+  const bg = banner.imageUrl
+    ? `url(${banner.imageUrl}) center/cover no-repeat`
+    : BG_GRADIENTS[current % BG_GRADIENTS.length];
 
   return (
     <div className="banner-carousel">
-      <div
-        className="banner-slide"
-        style={{ background: banner.bg }}
-        key={current}
-      >
+      <div className="banner-slide" style={{ background: bg }} key={current}>
         <div className="banner-content">
-          <div className="banner-emoji">{banner.emoji}</div>
-          <div className="banner-badge" style={{ borderColor: banner.accentColor, color: banner.accentColor }}>
+          <div
+            className="banner-badge"
+            style={{ borderColor: accent, color: accent }}
+          >
             {banner.badge}
           </div>
           <h2 className="banner-title">{banner.title}</h2>
           <p className="banner-subtitle">
-            {banner.subtitle.split('\n').map((line, i) => (
-              <span key={i}>{line}{i === 0 && <br />}</span>
+            {(banner.subtitle || '').split('\n').map((line: string, i: number) => (
+              <span key={`subtitle-${i}`}>{line}{i === 0 && <br />}</span>
             ))}
           </p>
           <button
             className="banner-cta"
-            style={{ background: banner.accentColor }}
-            onClick={() => navigate(banner.path)}
+            style={{ background: accent }}
+            onClick={() => navigate(banner.ctaPath || '/')}
           >
-            {banner.action} →
+            {banner.ctaText || '자세히 보기'} →
           </button>
         </div>
 
-        {/* Decorative military pattern */}
-        <div className="banner-deco">
-          <div className="banner-deco__ring banner-deco__ring--1" />
-          <div className="banner-deco__ring banner-deco__ring--2" />
-          <div className="banner-deco__ring banner-deco__ring--3" />
-        </div>
+        {/* 이미지가 없을 때만 장식 원 표시 */}
+        {!banner.imageUrl && (
+          <div className="banner-deco">
+            <div className="banner-deco__ring banner-deco__ring--1" />
+            <div className="banner-deco__ring banner-deco__ring--2" />
+            <div className="banner-deco__ring banner-deco__ring--3" />
+          </div>
+        )}
+
+        {/* 이미지 있을 때 어두운 오버레이 */}
+        {banner.imageUrl && <div className="banner-overlay" />}
       </div>
 
-      {/* Arrows */}
-      <button className="banner-arrow banner-arrow--left" onClick={prev} aria-label="이전">
-        ‹
-      </button>
-      <button className="banner-arrow banner-arrow--right" onClick={next} aria-label="다음">
-        ›
-      </button>
+      <button className="banner-arrow banner-arrow--left" onClick={prev} aria-label="이전">‹</button>
+      <button className="banner-arrow banner-arrow--right" onClick={next} aria-label="다음">›</button>
 
-      {/* Dots */}
       <div className="banner-dots">
-        {BANNERS.map((_, i) => (
+        {banners.map((banner, i) => (
           <button
-            key={i}
+            key={`dot-${banner.id}-${i}`}
             className={`banner-dot${i === current ? ' banner-dot--active' : ''}`}
             onClick={() => goTo(i)}
             aria-label={`슬라이드 ${i + 1}`}
@@ -151,11 +209,10 @@ function BannerCarousel() {
         ))}
       </div>
 
-      {/* Progress bar */}
       <div className="banner-progress">
         <div
           className="banner-progress__bar"
-          style={{ background: banner.accentColor }}
+          style={{ background: accent }}
           key={`${current}-progress`}
         />
       </div>
@@ -166,12 +223,12 @@ function BannerCarousel() {
 export default function Home() {
   const navigate = useNavigate();
   const { isLoggedIn, userId } = useAuth();
-  const [detailedUserInfo, setDetailedUserInfo] = useState<any>(null);
-  const [weather, setWeather] = useState<any>(null);
+  const [detailedUserInfo, setDetailedUserInfo] = useState<UserInfo | null>(null);
+  const [weather, setWeather] = useState<WeatherInfo | null>(null);
   const [weatherLoading, setWeatherLoading] = useState(true);
-  const [thisWeekSchedules, setThisWeekSchedules] = useState<any>(null);
+  const [thisWeekSchedules, setThisWeekSchedules] = useState<ScheduleItem[] | ScheduleData | null>(null);
   const [thisWeekLoading, setThisWeekLoading] = useState(true);
-  const [notices, setNotices] = useState<any[]>([]);
+  const [notices, setNotices] = useState<NoticeItem[]>([]);
   const [noticesLoading, setNoticesLoading] = useState(true);
 
   const NX = 36;
@@ -213,21 +270,23 @@ export default function Home() {
       .finally(() => setNoticesLoading(false));
   }, []);
 
-  const thisWeekList: any[] = (() => {
+  const thisWeekList: ScheduleItem[] = (() => {
     const data = thisWeekSchedules;
     if (Array.isArray(data)) return data;
-    if (Array.isArray(data?.enlistmentResponse)) return data.enlistmentResponse;
-    if (data?.enlistmentResponse && typeof data.enlistmentResponse === 'object')
-      return [data.enlistmentResponse];
-    if (Array.isArray(data?.content)) return data.content;
+    if (!data || typeof data !== 'object') return [];
+    const d = data as ScheduleData;
+    if (Array.isArray(d.enlistmentResponse)) return d.enlistmentResponse;
+    if (d.enlistmentResponse && typeof d.enlistmentResponse === 'object')
+      return [d.enlistmentResponse as ScheduleItem];
+    if (Array.isArray(d.content)) return d.content;
     return [];
   })();
 
-  const visibleThisWeekList = (() => {
+  const visibleThisWeekList: ScheduleItem[] = (() => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const parseDate = (value?: string): Date | null => {
-      if (!value || typeof value !== 'string') return null;
+      if (!value) return null;
       const m = /^\d{4}-\d{2}-\d{2}$/.exec(value.trim());
       if (!m) return null;
       const [y, mo, d] = value.trim().split('-').map(Number);
@@ -299,7 +358,7 @@ export default function Home() {
                     </tr>
                   </thead>
                   <tbody>
-                    {notices.map((notice: any) => (
+                    {notices.map((notice) => (
                       <tr
                         key={notice.id}
                         onClick={() => navigate(`/notices/${notice.id}`)}
@@ -334,7 +393,7 @@ export default function Home() {
                 <p className="home-loading">불러오는 중...</p>
               ) : visibleThisWeekList.length > 0 ? (
                 <div className="home-scheduleList">
-                  {visibleThisWeekList.map((schedule: any, index: number) => (
+                  {visibleThisWeekList.map((schedule, index) => (
                     <div
                       key={
                         schedule?.scheduleId ??

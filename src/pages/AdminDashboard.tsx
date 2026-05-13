@@ -170,13 +170,21 @@ const AdminDashboard: React.FC = () => {
     } catch (e) { /* 에러 처리 */ }
   };
 
+  // 배너 관련 에러 상태
+  const [bannerError, setBannerError] = useState<string | null>(null);
+
   // 배너 목록 조회
   const fetchBanners = async () => {
     setBannerLoading(true);
+    setBannerError(null);
     try {
       const res = await bannerApi.getAllBanners();
-      setBanners(res.data?.data ?? []);
-    } catch (e) {}
+      const data = res.data?.data;
+      setBanners(Array.isArray(data) ? data : []);
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : String(e);
+      setBannerError(`목록 조회 실패: ${msg}`);
+    }
     setBannerLoading(false);
   };
 
@@ -195,6 +203,7 @@ const AdminDashboard: React.FC = () => {
   const handleBannerSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setBannerLoading(true);
+    setBannerError(null);
     try {
       if (editBannerId !== null) {
         await bannerApi.updateBanner(editBannerId, bannerForm, bannerImage ?? undefined);
@@ -204,8 +213,12 @@ const AdminDashboard: React.FC = () => {
       setBannerForm({ badge: '', title: '', subtitle: '', ctaText: '', ctaPath: '', accentColor: '#003087', orderIndex: 0, isActive: true });
       setBannerImage(null);
       setEditBannerId(null);
-      fetchBanners();
-    } catch (e) {}
+      await fetchBanners();
+    } catch (e: unknown) {
+      const err = e as { response?: { status?: number; data?: { message?: string } }; message?: string };
+      const msg = err.response?.data?.message ?? err.message ?? String(e);
+      setBannerError(`저장 실패 (${err.response?.status ?? '네트워크 오류'}): ${msg}`);
+    }
     setBannerLoading(false);
   };
 
@@ -231,8 +244,11 @@ const AdminDashboard: React.FC = () => {
     if (!window.confirm('배너를 삭제할까요?')) return;
     try {
       await bannerApi.deleteBanner(id);
-      fetchBanners();
-    } catch (e) {}
+      await fetchBanners();
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : String(e);
+      setBannerError(`삭제 실패: ${msg}`);
+    }
   };
 
   const handleProductChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -528,6 +544,13 @@ const AdminDashboard: React.FC = () => {
             <h3 className="section-title">🖼️ 배너 관리</h3>
             <p className="section-subtitle">홈 화면 배너 등록 / 수정 / 삭제</p>
           </div>
+
+          {/* 배너 에러 메시지 */}
+          {bannerError && (
+            <div style={{ background: '#fff3f3', border: '1px solid #f5c2c2', color: '#c62828', padding: '10px 14px', borderRadius: 4, marginBottom: 12, fontSize: 13 }}>
+              ⚠️ {bannerError}
+            </div>
+          )}
 
           {/* 배너 목록 */}
           {bannerLoading ? <div>로딩 중...</div> : (

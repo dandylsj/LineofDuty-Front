@@ -29,18 +29,18 @@ export interface BannerRequest {
 export const bannerApi = {
   // 공개 - 활성 배너 목록
   getActiveBanners: () =>
-    api.get<{ data: BannerResponse[] }>('/api/banners'),
+    api.get<{ data: BannerResponse[] }>('/banners'),
 
   // 관리자 - 전체 배너 목록
   getAllBanners: () =>
-    api.get<{ data: BannerResponse[] }>('/api/banners/admin'),
+    api.get<{ data: BannerResponse[] }>('/banners/admin'),
 
   // 관리자 - 배너 생성 (이미지 포함)
   createBanner: (data: BannerRequest, image?: File) => {
     const formData = new FormData();
     formData.append('data', new Blob([JSON.stringify(data)], { type: 'application/json' }));
     if (image) formData.append('image', image);
-    return api.post('/api/banners', formData, {
+    return api.post('/banners', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
   },
@@ -50,12 +50,12 @@ export const bannerApi = {
     const formData = new FormData();
     formData.append('data', new Blob([JSON.stringify(data)], { type: 'application/json' }));
     if (image) formData.append('image', image);
-    return api.patch(`/api/banners/${bannerId}`, formData, {
+    return api.patch(`/banners/${bannerId}`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
   },
 
   // 관리자 - 배너 삭제
   deleteBanner: (bannerId: number) =>
-    api.delete(`/api/banners/${bannerId}`),
+    api.delete(`/banners/${bannerId}`),
 };

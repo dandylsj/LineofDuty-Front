@@ -4,6 +4,8 @@ import { enlistmentApi } from '../api/enlistmentApi';
 import { dashboardApi } from '../api/dashboardApi';
 import { adminNoticeApi } from '../api/adminNoticeApi';
 import { adminProductApi } from '../api/adminProductApi';
+import { bannerApi } from '../api/bannerApi';
+import type { BannerResponse, BannerRequest } from '../api/bannerApi';
 import '../styles/adminDashboard.css';
 
 interface EnlistmentApplication {
@@ -51,9 +53,26 @@ const AdminDashboard: React.FC = () => {
   const [productLoading, setProductLoading] = useState(false);
   const [productImage, setProductImage] = useState<File | null>(null);
 
+  // 배너 관련 상태
+  const [banners, setBanners] = useState<BannerResponse[]>([]);
+  const [bannerLoading, setBannerLoading] = useState(false);
+  const [editBannerId, setEditBannerId] = useState<number | null>(null);
+  const [bannerImage, setBannerImage] = useState<File | null>(null);
+  const [bannerForm, setBannerForm] = useState<BannerRequest>({
+    badge: '',
+    title: '',
+    subtitle: '',
+    ctaText: '',
+    ctaPath: '',
+    accentColor: '#003087',
+    orderIndex: 0,
+    isActive: true,
+  });
+
   useEffect(() => {
     fetchLists();
     fetchDashboard();
+    fetchBanners();
   }, []);
 
 
@@ -149,6 +168,71 @@ const AdminDashboard: React.FC = () => {
       await enlistmentApi.processDeferment(id, { decisionStatus: 'REJECTED' });
       fetchLists();
     } catch (e) { /* 에러 처리 */ }
+  };
+
+  // 배너 목록 조회
+  const fetchBanners = async () => {
+    setBannerLoading(true);
+    try {
+      const res = await bannerApi.getAllBanners();
+      setBanners(res.data?.data ?? []);
+    } catch (e) {}
+    setBannerLoading(false);
+  };
+
+  // 배너 폼 입력 핸들러
+  const handleBannerChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value, type } = e.target;
+    setBannerForm(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked
+               : name === 'orderIndex' ? Number(value)
+               : value,
+    }));
+  };
+
+  // 배너 등록 / 수정
+  const handleBannerSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setBannerLoading(true);
+    try {
+      if (editBannerId !== null) {
+        await bannerApi.updateBanner(editBannerId, bannerForm, bannerImage ?? undefined);
+      } else {
+        await bannerApi.createBanner(bannerForm, bannerImage ?? undefined);
+      }
+      setBannerForm({ badge: '', title: '', subtitle: '', ctaText: '', ctaPath: '', accentColor: '#003087', orderIndex: 0, isActive: true });
+      setBannerImage(null);
+      setEditBannerId(null);
+      fetchBanners();
+    } catch (e) {}
+    setBannerLoading(false);
+  };
+
+  // 배너 수정 모드 진입
+  const handleEditBanner = (banner: BannerResponse) => {
+    setEditBannerId(banner.id);
+    setBannerForm({
+      badge: banner.badge,
+      title: banner.title,
+      subtitle: banner.subtitle,
+      ctaText: banner.ctaText,
+      ctaPath: banner.ctaPath,
+      accentColor: banner.accentColor,
+      orderIndex: banner.orderIndex,
+      isActive: banner.isActive,
+    });
+    setBannerImage(null);
+    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+  };
+
+  // 배너 삭제
+  const handleDeleteBanner = async (id: number) => {
+    if (!window.confirm('배너를 삭제할까요?')) return;
+    try {
+      await bannerApi.deleteBanner(id);
+      fetchBanners();
+    } catch (e) {}
   };
 
   const handleProductChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -437,6 +521,104 @@ const AdminDashboard: React.FC = () => {
               <button type="submit" className="btn-primary" disabled={productLoading}>
                 {productLoading ? "등록 중..." : "등록"}
               </button>
+            </div>
+          </form>
+          {/* 배너 관리 */}
+          <div className="section-header" style={{ marginTop: 40 }}>
+            <h3 className="section-title">🖼️ 배너 관리</h3>
+            <p className="section-subtitle">홈 화면 배너 등록 / 수정 / 삭제</p>
+          </div>
+
+          {/* 배너 목록 */}
+          {bannerLoading ? <div>로딩 중...</div> : (
+            <div className="table-scroll">
+              <table className="dashboard-table">
+                <thead>
+                  <tr>
+                    <th>순서</th>
+                    <th>배지</th>
+                    <th>제목</th>
+                    <th>버튼경로</th>
+                    <th>이미지</th>
+                    <th>활성</th>
+                    <th>관리</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {banners.map(banner => (
+                    <tr key={banner.id}>
+                      <td>{banner.orderIndex}</td>
+                      <td>
+                        <span style={{ background: banner.accentColor, color: '#fff', padding: '2px 8px', borderRadius: 4, fontSize: 11 }}>
+                          {banner.badge}
+                        </span>
+                      </td>
+                      <td>{banner.title}</td>
+                      <td style={{ fontSize: 12, color: '#666' }}>{banner.ctaPath}</td>
+                      <td>
+                        {banner.imageUrl
+                          ? <img src={banner.imageUrl} alt="배너" style={{ width: 60, height: 30, objectFit: 'cover', borderRadius: 3 }} />
+                          : <span style={{ color: '#aaa', fontSize: 11 }}>없음</span>
+                        }
+                      </td>
+                      <td>
+                        <span style={{ color: banner.isActive ? '#2e7d32' : '#c62828', fontWeight: 700, fontSize: 12 }}>
+                          {banner.isActive ? '활성' : '비활성'}
+                        </span>
+                      </td>
+                      <td>
+                        <button onClick={() => handleEditBanner(banner)} style={{ marginRight: 4 }}>수정</button>
+                        <button onClick={() => handleDeleteBanner(banner.id)}>삭제</button>
+                      </td>
+                    </tr>
+                  ))}
+                  {banners.length === 0 && (
+                    <tr><td colSpan={7} style={{ textAlign: 'center', color: '#aaa' }}>등록된 배너가 없습니다</td></tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {/* 배너 등록/수정 폼 */}
+          <form onSubmit={handleBannerSubmit} className="notice-form" style={{ marginTop: 16 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+              <input name="badge" placeholder="배지 텍스트 (예: 2026 입영 안내)" value={bannerForm.badge}
+                onChange={handleBannerChange} className="notice-input" required />
+              <input name="accentColor" type="color" value={bannerForm.accentColor}
+                onChange={handleBannerChange} className="notice-input" title="포인트 컬러" />
+              <input name="title" placeholder="제목" value={bannerForm.title}
+                onChange={handleBannerChange} className="notice-input" required />
+              <input name="ctaText" placeholder="버튼 텍스트 (예: 자세히 보기)" value={bannerForm.ctaText}
+                onChange={handleBannerChange} className="notice-input" required />
+              <input name="ctaPath" placeholder="버튼 경로 (예: /enlistment)" value={bannerForm.ctaPath}
+                onChange={handleBannerChange} className="notice-input" required />
+              <input name="orderIndex" type="number" placeholder="표시 순서 (0부터)" value={bannerForm.orderIndex}
+                onChange={handleBannerChange} className="notice-input" min={0} />
+            </div>
+            <textarea name="subtitle" placeholder="부제목 (줄바꿈은 \n 입력)" value={bannerForm.subtitle}
+              onChange={handleBannerChange} className="notice-textarea" rows={2} />
+            <div className="notice-actions" style={{ alignItems: 'center', gap: 12 }}>
+              <label style={{ fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}>
+                <input type="checkbox" name="isActive" checked={bannerForm.isActive}
+                  onChange={handleBannerChange} />
+                활성화
+              </label>
+              <label style={{ fontSize: 13 }}>
+                배너 이미지
+                <input type="file" accept="image/*" style={{ marginLeft: 8 }}
+                  onChange={e => setBannerImage(e.target.files?.[0] ?? null)} />
+              </label>
+              <button type="submit" className="btn-primary" disabled={bannerLoading}>
+                {bannerLoading ? '처리 중...' : editBannerId !== null ? '수정 완료' : '배너 등록'}
+              </button>
+              {editBannerId !== null && (
+                <button type="button" className="btn-ghost" onClick={() => {
+                  setEditBannerId(null);
+                  setBannerForm({ badge: '', title: '', subtitle: '', ctaText: '', ctaPath: '', accentColor: '#003087', orderIndex: 0, isActive: true });
+                  setBannerImage(null);
+                }}>취소</button>
+              )}
             </div>
           </form>
         </div>

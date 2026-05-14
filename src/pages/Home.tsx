@@ -112,6 +112,16 @@ const BG_GRADIENTS = [
   'linear-gradient(120deg, #1a0033 0%, #3d0075 50%, #5a00aa 100%)',
 ];
 
+const getWeatherIcon = (status: string) => {
+  if (!status) return '☁️';
+  if (status.includes('맑음') || status.includes('해')) return '☀️';
+  if (status.includes('구름') || status.includes('흐림')) return '☁️';
+  if (status.includes('비')) return '🌧️';
+  if (status.includes('눈')) return '❄️';
+  if (status.includes('번개') || status.includes('뇌우')) return '⛈️';
+  return '🌤️';
+};
+
 function BannerCarousel() {
   const navigate = useNavigate();
   const [current, setCurrent] = useState(0);
@@ -439,19 +449,29 @@ export default function Home() {
               {weatherLoading ? (
                 <p className="home-loading">불러오는 중...</p>
               ) : weather ? (
-                <>
-                  <div className="home-weather__temp">
-                    {weather.temperature ?? weather.temp ?? '--'}°
+                <div className="home-weather-container">
+                  <div className="home-weather-location">📍 충남 논산시 연무읍</div>
+                  <div className="home-weather-main">
+                    <div className="home-weather-icon">
+                      {getWeatherIcon(weather.skyStatus ?? weather.description ?? '')}
+                    </div>
+                    <div className="home-weather__temp">
+                      {weather.temperature ?? weather.temp ?? '--'}°
+                    </div>
                   </div>
                   <p className="home-weather__desc">
                     {weather.skyStatus ?? weather.description ?? '정보 없음'}
                   </p>
-                </>
+                </div>
               ) : (
-                <>
-                  <div className="home-weather__temp">--°</div>
+                <div className="home-weather-container">
+                  <div className="home-weather-location">📍 충남 논산시 연무읍</div>
+                  <div className="home-weather-main">
+                     <div className="home-weather-icon">☁️</div>
+                     <div className="home-weather__temp">--°</div>
+                  </div>
                   <p className="home-weather__desc">날씨 정보 없음</p>
-                </>
+                </div>
               )}
             </div>
           </div>

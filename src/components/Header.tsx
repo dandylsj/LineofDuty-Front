@@ -71,8 +71,8 @@ export default function Header() {
       <header className="app-header">
         <div className="app-logo">
           <Link to="/">
-            <div className="logo"><img src={logo} alt="병무청 로고" /></div>
-            병무청
+            <div className="logo"><img src={logo} alt="Line of duty 로고" /></div>
+            Line of duty
           </Link>
         </div>
 

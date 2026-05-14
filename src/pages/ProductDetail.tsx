@@ -6,7 +6,7 @@ import QuantitySelector from "../components/QuantitySelector";
 import { addToCart } from "../store/cartStorage";
 import "../styles/productDetail.css";
 
-interface ProductImageItem {
+interface ImageType {
   id: number;
   imageUrl: string;
   orderIndex: number;
@@ -18,20 +18,17 @@ interface ProductType {
   description: string;
   price: number;
   stock: number;
-  status: string;
   productImageUrl: string | null;
-  categoryId: number | null;
-  categoryName: string | null;
+  images: ImageType[];
+  categoryName?: string;
+  categoryId?: number;
   shippingFee: number;
   freeShippingThreshold: number | null;
   deliveryType: 'STANDARD' | 'SAME_DAY' | 'DAWN';
-  detailContent: string | null;
-  images: ProductImageItem[];
-  createdAt: string;
-  modifiedAt: string;
+  detailContent?: string;
 }
 
-const DELIVERY_LABELS = {
+const DELIVERY_LABELS: Record<string, string> = {
   STANDARD: '일반배송',
   SAME_DAY: '당일배송',
   DAWN: '새벽배송',
@@ -41,7 +38,7 @@ export default function ProductDetail() {
   const { productId } = useParams();
   const navigate = useNavigate();
   const [product, setProduct] = useState<ProductType | null>(null);
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [selectedImage, setSelectedImage] = useState<string>('');
   const [activeTab, setActiveTab] = useState<'detail' | 'delivery'>('detail');
   const [qty, setQty] = useState(1);
 
@@ -49,7 +46,7 @@ export default function ProductDetail() {
     productApi.getProduct(Number(productId)).then(res => {
       const data: ProductType = res.data.data;
       setProduct(data);
-      setSelectedImage(data.productImageUrl);
+      setSelectedImage(data.productImageUrl ?? '');
     });
   }, [productId]);
 

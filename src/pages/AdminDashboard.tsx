@@ -14,7 +14,6 @@ import '../styles/adminDashboard.css';
 
 interface EnlistmentApplication {
   applicationId: number;
-  userId: number;
   status: string;
   createdAt: string;
   userName: string;
@@ -23,10 +22,8 @@ interface EnlistmentApplication {
 
 interface DefermentApplication {
   defermentsId: number;
-  userId: number;
   decisionStatus: string;
   reason: string;
-  status: string;
   username: string;
   changedDate: string;
   createdAt: string;
@@ -51,27 +48,21 @@ const defaultProductForm = {
 };
 
 const AdminDashboard: React.FC = () => {
-  // ── 공지사항 ──
   const [notices, setNotices] = useState<any[]>([]);
   const [noticeLoading, setNoticeLoading] = useState(false);
   const [noticeTitle, setNoticeTitle] = useState('');
   const [noticeContent, setNoticeContent] = useState('');
   const [editNoticeId, setEditNoticeId] = useState<number | null>(null);
 
-  // ── 입영/연기 ──
   const [enlistments, setEnlistments] = useState<EnlistmentApplication[]>([]);
   const [deferments, setDeferments] = useState<DefermentApplication[]>([]);
   const [loading, setLoading] = useState(true);
   const [dashboardSummary, setDashboardSummary] = useState<any>(null);
-  const [dashboardRequested, setDashboardRequested] = useState<any>(null);
-  const [dashboardDeferments, setDashboardDeferments] = useState<any>(null);
 
-  // ── 카테고리 ──
   const [categories, setCategories] = useState<CategoryResponse[]>([]);
   const [categoryLoading, setCategoryLoading] = useState(false);
   const [categoryForm, setCategoryForm] = useState({ name: '', description: '', parentId: '' });
 
-  // ── 상품 ──
   const [products, setProducts] = useState<any[]>([]);
   const [productListLoading, setProductListLoading] = useState(false);
   const [editProductId, setEditProductId] = useState<number | null>(null);
@@ -81,7 +72,6 @@ const AdminDashboard: React.FC = () => {
   const [detailImageFiles, setDetailImageFiles] = useState<File[]>([]);
   const [existingDetailImages, setExistingDetailImages] = useState<DetailImageItem[]>([]);
 
-  // ── 배너 ──
   const [banners, setBanners] = useState<BannerResponse[]>([]);
   const [bannerLoading, setBannerLoading] = useState(false);
   const [editBannerId, setEditBannerId] = useState<number | null>(null);
@@ -101,7 +91,6 @@ const AdminDashboard: React.FC = () => {
     fetchNotices();
   }, []);
 
-  // ── fetch 함수들 ──
   const fetchLists = async () => {
     setLoading(true);
     try {
@@ -109,7 +98,7 @@ const AdminDashboard: React.FC = () => {
       const deferRes = await enlistmentApi.getDefermentList();
       setEnlistments(enlistRes.data.data || []);
       setDeferments(deferRes.data.data.content || []);
-    } catch { }
+    } catch (_e) { /* ignore */ }
     setLoading(false);
   };
 
@@ -119,19 +108,15 @@ const AdminDashboard: React.FC = () => {
       const res = await fetch('/api/notices?page=0&size=20');
       const data = await res.json();
       setNotices(Array.isArray(data.data) ? data.data : data.data?.content || []);
-    } catch { }
+    } catch (_e) { /* ignore */ }
     setNoticeLoading(false);
   };
 
   const fetchDashboard = async () => {
     try {
       const summaryRes = await dashboardApi.getSummary();
-      const requestedRes = await dashboardApi.getRequested();
-      const defermentsRes = await dashboardApi.getDeferments();
       setDashboardSummary(summaryRes.data.data);
-      setDashboardRequested(requestedRes.data.data);
-      setDashboardDeferments(defermentsRes.data.data);
-    } catch { }
+    } catch (_e) { /* ignore */ }
   };
 
   const fetchCategories = async () => {
@@ -139,7 +124,7 @@ const AdminDashboard: React.FC = () => {
     try {
       const res = await categoryApi.getCategories();
       setCategories(res.data?.data ?? []);
-    } catch { }
+    } catch (_e) { /* ignore */ }
     setCategoryLoading(false);
   };
 
@@ -149,7 +134,7 @@ const AdminDashboard: React.FC = () => {
       const res = await productApi.getProducts({ page: 0, size: 100 });
       const content = res.data?.data?.content ?? res.data?.data ?? [];
       setProducts(Array.isArray(content) ? content : []);
-    } catch { }
+    } catch (_e) { /* ignore */ }
     setProductListLoading(false);
   };
 
@@ -157,10 +142,9 @@ const AdminDashboard: React.FC = () => {
     try {
       const res = await adminProductApi.getDetailImages(productId);
       setExistingDetailImages(res.data?.data ?? []);
-    } catch { }
+    } catch (_e) { /* ignore */ }
   };
 
-  // ── 카테고리 핸들러 ──
   const handleCategorySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setCategoryLoading(true);
@@ -172,7 +156,7 @@ const AdminDashboard: React.FC = () => {
       });
       setCategoryForm({ name: '', description: '', parentId: '' });
       await fetchCategories();
-    } catch { }
+    } catch (_e) { /* ignore */ }
     setCategoryLoading(false);
   };
 
@@ -187,7 +171,6 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
-  // ── 상품 핸들러 ──
   const handleProductChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setProductForm(prev => ({ ...prev, [name]: value }));
@@ -237,12 +220,9 @@ const AdminDashboard: React.FC = () => {
         savedProductId = res.data?.data?.productId ?? res.data?.data?.id;
       }
 
-      // 대표 이미지 업로드
       if (productImage && savedProductId) {
         await adminProductApi.uploadProductImage(savedProductId, productImage);
       }
-
-      // 상세 이미지 업로드
       for (const file of detailImageFiles) {
         await adminProductApi.addDetailImage(savedProductId, file);
       }
@@ -254,7 +234,7 @@ const AdminDashboard: React.FC = () => {
       setExistingDetailImages([]);
       await fetchProducts();
       alert(editProductId !== null ? '상품이 수정되었습니다.' : '상품이 등록되었습니다.');
-    } catch { alert('처리 중 오류가 발생했습니다.'); }
+    } catch (_e) { alert('처리 중 오류가 발생했습니다.'); }
     setProductLoading(false);
   };
 
@@ -263,7 +243,7 @@ const AdminDashboard: React.FC = () => {
     try {
       await adminProductApi.deleteProduct(productId);
       await fetchProducts();
-    } catch { }
+    } catch (_e) { /* ignore */ }
   };
 
   const handleDeleteDetailImage = async (imageId: number) => {
@@ -271,7 +251,7 @@ const AdminDashboard: React.FC = () => {
     try {
       await adminProductApi.deleteDetailImage(editProductId, imageId);
       await fetchDetailImages(editProductId);
-    } catch { }
+    } catch (_e) { /* ignore */ }
   };
 
   const handleDetailImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -279,7 +259,6 @@ const AdminDashboard: React.FC = () => {
     setDetailImageFiles(prev => [...prev, ...files]);
   };
 
-  // ── 공지 핸들러 ──
   const handleNoticeSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -290,35 +269,33 @@ const AdminDashboard: React.FC = () => {
       }
       setNoticeTitle(''); setNoticeContent(''); setEditNoticeId(null);
       fetchNotices();
-    } catch { }
+    } catch (_e) { /* ignore */ }
   };
 
   const handleDeleteNotice = async (id: number) => {
-    try { await adminNoticeApi.deleteNotice(id); fetchNotices(); } catch { }
+    try { await adminNoticeApi.deleteNotice(id); fetchNotices(); } catch (_e) { /* ignore */ }
   };
 
   const handleEditNotice = (notice: any) => {
     setEditNoticeId(notice.id); setNoticeTitle(notice.title); setNoticeContent(notice.content);
   };
 
-  // ── 입영/연기 핸들러 ──
   const handleApproveEnlist = async (id: number) => {
-    try { await enlistmentApi.approveApplication(id); fetchLists(); } catch { }
+    try { await enlistmentApi.approveApplication(id); fetchLists(); } catch (_e) { /* ignore */ }
   };
   const handleApproveDefer = async (id: number) => {
-    try { await enlistmentApi.processDeferment(id, { decisionStatus: 'APPROVED' }); fetchLists(); } catch { }
+    try { await enlistmentApi.processDeferment(id, { decisionStatus: 'APPROVED' }); fetchLists(); } catch (_e) { /* ignore */ }
   };
   const handleRejectDefer = async (id: number) => {
-    try { await enlistmentApi.processDeferment(id, { decisionStatus: 'REJECTED' }); fetchLists(); } catch { }
+    try { await enlistmentApi.processDeferment(id, { decisionStatus: 'REJECTED' }); fetchLists(); } catch (_e) { /* ignore */ }
   };
 
-  // ── 배너 핸들러 ──
   const fetchBanners = async () => {
     setBannerLoading(true);
     try {
       const res = await bannerApi.getAllBanners();
       setBanners(Array.isArray(res.data?.data) ? res.data.data : []);
-    } catch { }
+    } catch (_e) { /* ignore */ }
     setBannerLoading(false);
   };
 
@@ -359,10 +336,9 @@ const AdminDashboard: React.FC = () => {
 
   const handleDeleteBanner = async (id: number) => {
     if (!window.confirm('배너를 삭제할까요?')) return;
-    try { await bannerApi.deleteBanner(id); await fetchBanners(); } catch { }
+    try { await bannerApi.deleteBanner(id); await fetchBanners(); } catch (_e) { /* ignore */ }
   };
 
-  // 카테고리 플랫 리스트 (select용)
   const flatCategories: CategoryResponse[] = [];
   const flattenCats = (cats: CategoryResponse[], depth = 0) => {
     cats.forEach(c => {
@@ -376,8 +352,6 @@ const AdminDashboard: React.FC = () => {
     <>
       <Header />
       <div className="admin-dashboard-wrapper">
-
-        {/* ══ 왼쪽: 대시보드 요약 ══ */}
         <div className="admin-dashboard-left admin-dashboard-section">
           <div className="section-header">
             <h2 className="section-title">대시보드</h2>
@@ -398,10 +372,9 @@ const AdminDashboard: React.FC = () => {
           </div>
         </div>
 
-        {/* ══ 오른쪽 ══ */}
         <div className="admin-dashboard-right admin-dashboard-section">
 
-          {/* ── 카테고리 관리 ── */}
+          {/* 카테고리 관리 */}
           <div className="section-header">
             <h3 className="section-title">카테고리 관리</h3>
             <p className="section-subtitle">상품 카테고리 등록 / 삭제</p>
@@ -425,35 +398,33 @@ const AdminDashboard: React.FC = () => {
               </button>
             </div>
           </form>
-          {categoryLoading ? <div>로딩 중...</div> : (
-            <div className="table-scroll">
-              <table className="dashboard-table">
-                <thead><tr><th>ID</th><th>이름</th><th>설명</th><th>상위</th><th>관리</th></tr></thead>
-                <tbody>
-                  {categories.flatMap(cat => {
-                    const rows = [
-                      <tr key={cat.id}>
-                        <td>{cat.id}</td><td>{cat.name}</td><td>{cat.description}</td>
-                        <td>-</td>
-                        <td><button onClick={() => handleDeleteCategory(cat.id)}>삭제</button></td>
-                      </tr>
-                    ];
-                    cat.children?.forEach(child => rows.push(
-                      <tr key={child.id} style={{ background: '#f9f9f9' }}>
-                        <td>{child.id}</td><td style={{ paddingLeft: 20 }}>└ {child.name}</td>
-                        <td>{child.description}</td><td>{cat.name}</td>
-                        <td><button onClick={() => handleDeleteCategory(child.id)}>삭제</button></td>
-                      </tr>
-                    ));
-                    return rows;
-                  })}
-                  {categories.length === 0 && <tr><td colSpan={5} style={{ textAlign: 'center', color: '#aaa' }}>등록된 카테고리가 없습니다</td></tr>}
-                </tbody>
-              </table>
-            </div>
-          )}
+          <div className="table-scroll">
+            <table className="dashboard-table">
+              <thead><tr><th>ID</th><th>이름</th><th>설명</th><th>상위</th><th>관리</th></tr></thead>
+              <tbody>
+                {categories.flatMap(cat => {
+                  const rows = [
+                    <tr key={cat.id}>
+                      <td>{cat.id}</td><td>{cat.name}</td><td>{cat.description}</td>
+                      <td>-</td>
+                      <td><button onClick={() => handleDeleteCategory(cat.id)}>삭제</button></td>
+                    </tr>
+                  ];
+                  (cat.children ?? []).forEach(child => rows.push(
+                    <tr key={child.id} style={{ background: '#f9f9f9' }}>
+                      <td>{child.id}</td><td style={{ paddingLeft: 20 }}>└ {child.name}</td>
+                      <td>{child.description}</td><td>{cat.name}</td>
+                      <td><button onClick={() => handleDeleteCategory(child.id)}>삭제</button></td>
+                    </tr>
+                  ));
+                  return rows;
+                })}
+                {categories.length === 0 && <tr><td colSpan={5} style={{ textAlign: 'center', color: '#aaa' }}>등록된 카테고리가 없습니다</td></tr>}
+              </tbody>
+            </table>
+          </div>
 
-          {/* ── 상품 목록 ── */}
+          {/* 상품 목록 */}
           <div className="section-header" style={{ marginTop: 36 }}>
             <h3 className="section-title">상품 목록</h3>
             <p className="section-subtitle">수정 버튼을 누르면 아래 폼에 자동 입력됩니다</p>
@@ -465,10 +436,8 @@ const AdminDashboard: React.FC = () => {
                 <tbody>
                   {products.map((p: any) => (
                     <tr key={p.productId} style={{ background: editProductId === p.productId ? '#f0f4ff' : undefined }}>
-                      <td>{p.productId}</td>
-                      <td>{p.name}</td>
-                      <td>{p.price?.toLocaleString()}원</td>
-                      <td>{p.stock}</td>
+                      <td>{p.productId}</td><td>{p.name}</td>
+                      <td>{p.price?.toLocaleString()}원</td><td>{p.stock}</td>
                       <td>{p.categoryName ?? '-'}</td>
                       <td>{p.shippingFee === 0 ? '무료' : `${p.shippingFee?.toLocaleString()}원`}</td>
                       <td>
@@ -483,7 +452,7 @@ const AdminDashboard: React.FC = () => {
             </div>
           )}
 
-          {/* ── 상품 등록/수정 폼 ── */}
+          {/* 상품 등록/수정 */}
           <div className="section-header" style={{ marginTop: 36 }}>
             <h3 className="section-title">{editProductId ? `상품 수정 (ID: ${editProductId})` : '상품 등록'}</h3>
             <p className="section-subtitle">{editProductId ? '내용을 수정하고 저장하세요' : '신규 상품 추가'}</p>
@@ -514,20 +483,17 @@ const AdminDashboard: React.FC = () => {
             </div>
             <textarea className="notice-textarea" name="description" placeholder="상품 간단 설명 *"
               value={productForm.description} onChange={handleProductChange} rows={3} required />
-            <label style={{ fontSize: 13, color: '#555', marginTop: 8, display: 'block' }}>
-              상세 내용 (HTML 입력 가능)
-            </label>
+            <label style={{ fontSize: 13, color: '#555', marginTop: 8, display: 'block' }}>상세 내용 (HTML 입력 가능)</label>
             <textarea className="notice-textarea" name="detailContent"
               placeholder="상품 상세 설명을 입력하세요. HTML 태그 사용 가능합니다."
               value={productForm.detailContent} onChange={handleProductChange} rows={8} />
-
             <div style={{ marginTop: 12 }}>
               <label style={{ fontSize: 13, color: '#555' }}>대표 이미지</label>
               <input type="file" accept="image/*" className="notice-input" style={{ marginTop: 4 }}
                 onChange={e => setProductImage(e.target.files?.[0] ?? null)} />
             </div>
             <div style={{ marginTop: 8 }}>
-              <label style={{ fontSize: 13, color: '#555' }}>상세 이미지 추가 (여러 장 선택 가능)</label>
+              <label style={{ fontSize: 13, color: '#555' }}>상세 이미지 (여러 장 선택 가능)</label>
               <input type="file" accept="image/*" multiple className="notice-input" style={{ marginTop: 4 }}
                 onChange={handleDetailImageSelect} />
               {detailImageFiles.length > 0 && (
@@ -536,19 +502,15 @@ const AdminDashboard: React.FC = () => {
                 </div>
               )}
             </div>
-
-            {/* 기존 상세 이미지 (수정 모드) */}
             {editProductId !== null && existingDetailImages.length > 0 && (
               <div style={{ marginTop: 12 }}>
-                <label style={{ fontSize: 13, color: '#555', display: 'block', marginBottom: 8 }}>
-                  등록된 상세 이미지
-                </label>
+                <label style={{ fontSize: 13, color: '#555', display: 'block', marginBottom: 8 }}>등록된 상세 이미지</label>
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                   {existingDetailImages.map(img => (
                     <div key={img.id} style={{ position: 'relative' }}>
                       <img src={img.imageUrl} alt="" style={{ width: 80, height: 80, objectFit: 'cover', borderRadius: 4, border: '1px solid #ddd' }} />
                       <button type="button" onClick={() => handleDeleteDetailImage(img.id)}
-                        style={{ position: 'absolute', top: -6, right: -6, background: '#c62828', color: '#fff', border: 'none', borderRadius: '50%', width: 20, height: 20, cursor: 'pointer', fontSize: 12, lineHeight: 1 }}>
+                        style={{ position: 'absolute', top: -6, right: -6, background: '#c62828', color: '#fff', border: 'none', borderRadius: '50%', width: 20, height: 20, cursor: 'pointer', fontSize: 12 }}>
                         ×
                       </button>
                     </div>
@@ -556,7 +518,6 @@ const AdminDashboard: React.FC = () => {
                 </div>
               </div>
             )}
-
             <div className="notice-actions" style={{ marginTop: 16 }}>
               <button type="submit" className="btn-primary" disabled={productLoading}>
                 {productLoading ? '처리 중...' : editProductId ? '수정 완료' : '상품 등록'}
@@ -570,7 +531,7 @@ const AdminDashboard: React.FC = () => {
             </div>
           </form>
 
-          {/* ── 공지사항 관리 ── */}
+          {/* 공지사항 관리 */}
           <div className="section-header" style={{ marginTop: 36 }}>
             <h3 className="section-title">공지사항 관리</h3>
             <p className="section-subtitle">등록/수정/삭제</p>
@@ -602,7 +563,7 @@ const AdminDashboard: React.FC = () => {
             </div>
           )}
 
-          {/* ── 입영 신청 ── */}
+          {/* 입영 신청 */}
           <h3 style={{ marginTop: 28 }}>입영 신청 리스트</h3>
           {loading ? <div>로딩 중...</div> : (
             <div className="table-scroll">
@@ -621,7 +582,7 @@ const AdminDashboard: React.FC = () => {
             </div>
           )}
 
-          {/* ── 연기 신청 ── */}
+          {/* 연기 신청 */}
           <h3 style={{ marginTop: 20 }}>연기 신청 리스트</h3>
           {loading ? <div>로딩 중...</div> : (
             <div className="table-scroll">
@@ -645,7 +606,7 @@ const AdminDashboard: React.FC = () => {
             </div>
           )}
 
-          {/* ── 배너 관리 ── */}
+          {/* 배너 관리 */}
           <div className="section-header" style={{ marginTop: 36 }}>
             <h3 className="section-title">배너 관리</h3>
             <p className="section-subtitle">홈 화면 배너 등록 / 수정 / 삭제</p>

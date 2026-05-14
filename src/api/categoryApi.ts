@@ -15,7 +15,7 @@ export interface CategoryRequest {
 }
 
 export const categoryApi = {
-  getCategories: () => api.get<{ data: CategoryResponse[] }>('/categories'),
+  getCategories: () => api.get('/categories'),
   createCategory: (data: CategoryRequest) => api.post('/categories', data),
   deleteCategory: (id: number) => api.delete(`/categories/${id}`),
 };

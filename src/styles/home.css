@@ -1,9 +1,9 @@
-/* ===== Government Homepage ===== */
+/* ===== Modern Shopping Mall Homepage ===== */
 
 .home-page {
-  background: #F4F5F7;
+  background: #ffffff; /* 화이트 배경으로 변경 */
   min-height: 100vh;
-  color: #222;
+  color: #333;
 }
 
 /* ===== Banner Carousel ===== */
@@ -11,16 +11,18 @@
   position: relative;
   width: 100%;
   overflow: hidden;
+  margin-bottom: 40px; /* 배너 아래 여백 추가 */
 }
 
 .banner-slide {
   width: 100%;
-  height: 420px;
+  height: 480px; /* 배너 높이 증가 */
   display: flex;
   align-items: center;
   position: relative;
   overflow: hidden;
   animation: bannerFadeIn 0.5s ease;
+  background-color: #f8f9fa; /* 기본 배경색 */
 }
 
 @keyframes bannerFadeIn {
@@ -31,97 +33,76 @@
 .banner-content {
   position: relative;
   z-index: 2;
-  padding: 0 80px;
-  max-width: 680px;
+  padding: 0 10%; /* 반응형 패딩 */
+  max-width: 800px;
 }
 
 .banner-emoji {
   font-size: 52px;
   margin-bottom: 12px;
   display: block;
-  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
+  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));
 }
 
 .banner-badge {
   display: inline-block;
-  border: 1.5px solid;
-  border-radius: 20px;
-  padding: 4px 14px;
-  font-size: 12px;
-  font-weight: 700;
+  border: 1px solid;
+  border-radius: 4px; /* 각진 테두리로 변경 */
+  padding: 4px 12px;
+  font-size: 13px;
+  font-weight: 600;
   letter-spacing: 0.5px;
-  text-transform: uppercase;
-  margin-bottom: 14px;
+  margin-bottom: 16px;
+  background-color: rgba(255, 255, 255, 0.2);
 }
 
 .banner-title {
-  font-size: 42px;
-  font-weight: 900;
+  font-size: 48px; /* 폰트 크기 증가 */
+  font-weight: 800;
   color: #fff;
-  margin: 0 0 12px 0;
-  line-height: 1.15;
+  margin: 0 0 16px 0;
+  line-height: 1.2;
   letter-spacing: -0.5px;
-  text-shadow: 0 2px 12px rgba(0,0,0,0.4);
+  text-shadow: 0 2px 8px rgba(0,0,0,0.3);
 }
 
 .banner-subtitle {
-  font-size: 17px;
-  color: rgba(255,255,255,0.8);
-  margin: 0 0 28px 0;
-  line-height: 1.7;
+  font-size: 18px;
+  color: rgba(255,255,255,0.9);
+  margin: 0 0 32px 0;
+  line-height: 1.6;
+  font-weight: 400;
 }
 
 .banner-cta {
   display: inline-block;
-  padding: 13px 28px;
+  padding: 14px 32px;
+  background-color: #000; /* 검정색 버튼으로 모던하게 */
   border: none;
-  border-radius: 4px;
-  font-size: 15px;
-  font-weight: 700;
+  border-radius: 0; /* 각진 버튼 */
+  font-size: 16px;
+  font-weight: 600;
   color: #fff;
   cursor: pointer;
   font-family: inherit;
-  letter-spacing: 0.3px;
-  transition: opacity 0.2s, transform 0.15s;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+  transition: background-color 0.2s, transform 0.15s;
 }
 .banner-cta:hover {
-  opacity: 0.9;
-  transform: translateY(-1px);
+  background-color: #333;
 }
 
-/* 이미지 배너 어두운 오버레이 */
+/* 이미지 배너 어두운 오버레이 - 조금 더 부드럽게 */
 .banner-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to right, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.2) 60%, transparent 100%);
+  background: linear-gradient(to right, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.1) 100%);
   z-index: 1;
 }
 
-/* 로딩 상태 */
-.banner-carousel--loading {
-  height: 420px;
-  background: #001a4d;
-}
-
-/* Decorative rings */
+/* Decorative rings - 제거하거나 단순화 */
 .banner-deco {
-  position: absolute;
-  right: -80px;
-  top: 50%;
-  transform: translateY(-50%);
-  z-index: 1;
+  display: none; /* 모던한 느낌을 위해 제거 */
 }
-
-.banner-deco__ring {
-  position: absolute;
-  border-radius: 50%;
-  border: 1px solid rgba(255,255,255,0.08);
-  transform: translate(-50%, -50%);
-}
-.banner-deco__ring--1 { width: 500px; height: 500px; }
-.banner-deco__ring--2 { width: 700px; height: 700px; border-color: rgba(255,255,255,0.05); }
-.banner-deco__ring--3 { width: 900px; height: 900px; border-color: rgba(255,255,255,0.03); }
 
 /* Arrow buttons */
 .banner-arrow {
@@ -129,150 +110,138 @@
   top: 50%;
   transform: translateY(-50%);
   z-index: 10;
-  background: rgba(0,0,0,0.35);
-  color: #fff;
-  border: none;
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  font-size: 26px;
+  background: rgba(255,255,255,0.8); /* 밝은 배경에 어두운 아이콘 */
+  color: #000;
+  border: 1px solid #eee;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%; /* 또는 0으로 주어 사각형으로 만들 수 있음 */
+  font-size: 20px;
   line-height: 1;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: background 0.2s;
-  backdrop-filter: blur(4px);
+  transition: all 0.2s;
 }
 .banner-arrow:hover {
-  background: rgba(0,0,0,0.6);
+  background: #fff;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
-.banner-arrow--left  { left: 20px; }
-.banner-arrow--right { right: 20px; }
+.banner-arrow--left  { left: 30px; }
+.banner-arrow--right { right: 30px; }
 
 /* Dots */
 .banner-dots {
   position: absolute;
-  bottom: 52px;
-  left: 80px;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%); /* 중앙 정렬로 변경 */
   display: flex;
-  gap: 8px;
+  gap: 12px;
   z-index: 10;
 }
 
 .banner-dot {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
   background: rgba(255,255,255,0.4);
   border: none;
   cursor: pointer;
   padding: 0;
-  transition: background 0.2s, transform 0.2s;
+  transition: background 0.2s;
 }
 .banner-dot--active {
   background: #fff;
-  transform: scale(1.3);
+  width: 24px; /* 활성화된 닷은 길게 */
+  border-radius: 5px;
 }
 
-/* Progress bar */
+/* Progress bar - 숨김 (모던 쇼핑몰 느낌) */
 .banner-progress {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: rgba(255,255,255,0.15);
-  z-index: 10;
+  display: none;
 }
 
-.banner-progress__bar {
-  height: 100%;
-  animation: bannerProgress 5s linear;
-  transform-origin: left;
-}
-
-@keyframes bannerProgress {
-  from { width: 0%; }
-  to   { width: 100%; }
-}
-
-/* ===== Quick Services ===== */
+/* ===== Quick Services (카테고리 느낌으로 변경) ===== */
 .home-quickServices {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 36px 24px;
+  padding: 0 24px 60px; /* 패딩 조정 */
 }
 
 .home-section-header {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   justify-content: space-between;
-  margin-bottom: 16px;
+  margin-bottom: 24px;
+  border-bottom: 2px solid #000; /* 강렬한 밑줄 */
+  padding-bottom: 12px;
 }
 
 .home-section-title {
-  font-size: 17px;
-  font-weight: 800;
-  color: #003087;
+  font-size: 24px;
+  font-weight: 700;
+  color: #000;
   margin: 0;
-  padding-left: 10px;
-  border-left: 4px solid #C8102E;
+  border: none;
+  padding: 0;
 }
 
 .home-section-more {
-  font-size: 12px;
-  color: #777;
+  font-size: 14px;
+  color: #666;
   text-decoration: none;
-  display: flex;
-  align-items: center;
-  gap: 4px;
+  font-weight: 500;
 }
 .home-section-more:hover {
-  color: #003087;
-  text-decoration: none;
+  color: #000;
 }
 
 .home-serviceGrid {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  gap: 12px;
+  gap: 20px;
 }
 
 .home-serviceCard {
   background: #fff;
-  border: 1px solid #e0e5ef;
-  border-radius: 6px;
-  padding: 20px 12px;
+  border: 1px solid #eaeaea; /* 연한 테두리 */
+  border-radius: 0; /* 각진 디자인 */
+  padding: 30px 16px;
   text-align: center;
   cursor: pointer;
-  transition: border-color 0.2s, box-shadow 0.2s, transform 0.15s;
+  transition: all 0.3s ease;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
+  gap: 16px;
 }
 .home-serviceCard:hover {
-  border-color: #003087;
-  box-shadow: 0 4px 16px rgba(0,48,135,0.1);
-  transform: translateY(-2px);
+  border-color: #000;
+  box-shadow: none; /* 그림자 제거, 보더 강조 */
+  transform: translateY(-4px);
 }
 
 .home-serviceCard__icon {
-  width: 48px;
-  height: 48px;
+  width: 60px;
+  height: 60px;
   border-radius: 50%;
-  background: #EEF4FF;
+  background: #f8f9fa; /* 밝은 회색 배경 */
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 22px;
+  font-size: 28px;
+  transition: background-color 0.3s;
+}
+.home-serviceCard:hover .home-serviceCard__icon {
+  background: #f1f3f5;
 }
 
 .home-serviceCard__label {
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 600;
-  color: #333;
+  color: #111;
   line-height: 1.4;
 }
 
@@ -280,64 +249,64 @@
 .home-content {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 24px 48px;
+  padding: 0 24px 80px;
   display: grid;
-  grid-template-columns: 1fr 320px;
-  gap: 24px;
+  grid-template-columns: 2fr 1fr; /* 비율 조정 */
+  gap: 40px; /* 간격 넓힘 */
 }
 
 .home-main-col {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 40px;
 }
 
 .home-side-col {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 30px;
 }
 
-/* Gov card */
+/* Gov card -> Board/List card style */
 .home-govCard {
   background: #fff;
-  border: 1px solid #e0e5ef;
-  border-radius: 6px;
+  border: none;
+  border-top: 2px solid #000; /* 상단 강조 보더 */
+  border-radius: 0;
   overflow: hidden;
 }
 
 .home-govCard__header {
-  background: #003087;
-  padding: 12px 16px;
+  background: transparent;
+  padding: 20px 0 16px;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  border-bottom: 1px solid #eaeaea;
 }
 
 .home-govCard__header-title {
-  font-size: 14px;
+  font-size: 20px;
   font-weight: 700;
-  color: #fff;
+  color: #000;
   margin: 0;
 }
 
 .home-govCard__header-more {
-  font-size: 11px;
-  color: #a8c0e8;
+  font-size: 13px;
+  color: #888;
   cursor: pointer;
   background: none;
   border: none;
   padding: 0;
-  font-family: inherit;
-  text-decoration: none;
+  font-weight: 500;
 }
 .home-govCard__header-more:hover {
-  color: #fff;
-  background: none;
+  color: #000;
 }
 
 .home-govCard__body {
-  padding: 16px;
+  padding: 16px 0;
 }
 
 /* Notice table */
@@ -346,31 +315,25 @@
   border-collapse: collapse;
 }
 
-.home-noticeTable thead th {
-  background: #f4f5f7;
-  font-size: 12px;
-  font-weight: 600;
-  color: #555;
-  padding: 8px 12px;
-  text-align: left;
-  border-bottom: 1px solid #e0e5ef;
+.home-noticeTable thead {
+  display: none; /* 헤더 숨김으로 심플하게 */
 }
 
 .home-noticeTable tbody tr {
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid #f1f3f5;
   cursor: pointer;
-  transition: background-color 0.15s;
+  transition: background-color 0.2s;
 }
 .home-noticeTable tbody tr:hover {
-  background-color: #f8f9fc;
+  background-color: #fafafa;
 }
 .home-noticeTable tbody tr:last-child {
   border-bottom: none;
 }
 
 .home-noticeTable td {
-  padding: 10px 12px;
-  font-size: 13px;
+  padding: 16px 8px;
+  font-size: 15px;
   color: #333;
 }
 
@@ -379,14 +342,15 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  font-weight: 500;
 }
 
 .home-noticeTable .notice-date-cell {
   white-space: nowrap;
-  color: #888;
-  font-size: 12px;
+  color: #999;
+  font-size: 13px;
   text-align: right;
-  width: 90px;
+  width: 100px;
 }
 
 /* Schedule list */
@@ -399,29 +363,27 @@
 .home-scheduleItem {
   display: flex;
   align-items: center;
-  padding: 10px 0;
-  border-bottom: 1px solid #eee;
-  gap: 12px;
+  padding: 16px 8px;
+  border-bottom: 1px solid #f1f3f5;
+  gap: 16px;
   cursor: pointer;
-  transition: background-color 0.15s;
+  transition: background-color 0.2s;
 }
 .home-scheduleItem:last-child {
   border-bottom: none;
 }
 .home-scheduleItem:hover {
-  background-color: #f8f9fc;
-  margin: 0 -16px;
-  padding: 10px 16px;
+  background-color: #fafafa;
 }
 
 .home-scheduleItem__badge {
   flex: 0 0 auto;
-  background: #EEF4FF;
-  color: #003087;
-  border-radius: 4px;
-  padding: 4px 8px;
-  font-size: 11px;
-  font-weight: 700;
+  background: #000; /* 검정색 배지 */
+  color: #fff;
+  border-radius: 0;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
   text-align: center;
   min-width: 70px;
 }
@@ -432,62 +394,64 @@
 }
 
 .home-scheduleItem__date {
-  font-size: 13px;
-  font-weight: 700;
-  color: #222;
+  font-size: 15px;
+  font-weight: 600;
+  color: #000;
 }
 
 .home-scheduleItem__sub {
-  font-size: 11px;
-  color: #888;
-  margin-top: 2px;
+  font-size: 13px;
+  color: #777;
+  margin-top: 4px;
 }
 
 .home-scheduleItem__slots {
-  font-size: 12px;
-  font-weight: 600;
-  color: #003087;
+  font-size: 14px;
+  font-weight: 700;
+  color: #d90429; /* 빨간색으로 강조 */
   white-space: nowrap;
 }
 
 /* Side cards */
 .home-sideCard {
   background: #fff;
-  border: 1px solid #e0e5ef;
-  border-radius: 6px;
-  overflow: hidden;
+  border: 1px solid #eaeaea;
+  border-radius: 0;
+  padding: 24px;
 }
 
 .home-sideCard__header {
-  background: #1A5276;
-  padding: 10px 14px;
+  background: transparent;
+  padding: 0 0 16px;
+  border-bottom: 1px solid #eaeaea;
+  margin-bottom: 16px;
 }
 
 .home-sideCard__header-title {
-  font-size: 13px;
+  font-size: 16px;
   font-weight: 700;
-  color: #fff;
+  color: #000;
   margin: 0;
 }
 
 .home-sideCard__body {
-  padding: 16px;
+  padding: 0;
   text-align: center;
 }
 
 /* Weather card */
 .home-weather__temp {
-  font-size: 40px;
+  font-size: 48px;
   font-weight: 800;
-  color: #003087;
+  color: #000;
   line-height: 1;
-  margin: 8px 0 4px;
+  margin: 16px 0 8px;
 }
 
 .home-weather__desc {
-  font-size: 13px;
+  font-size: 14px;
   color: #666;
-  margin: 0;
+  margin: 0 0 16px;
 }
 
 /* User info card */
@@ -495,79 +459,61 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 6px 0;
-  border-bottom: 1px solid #f0f0f0;
-  font-size: 13px;
+  padding: 10px 0;
+  border-bottom: 1px dashed #eaeaea;
+  font-size: 14px;
 }
 .home-userInfo__row:last-child {
   border-bottom: none;
 }
 .home-userInfo__label {
-  color: #777;
-  font-weight: 600;
+  color: #888;
 }
 .home-userInfo__value {
-  color: #222;
-  font-weight: 500;
+  color: #000;
+  font-weight: 600;
 }
 
-/* Chat button */
-.home-chatBtn {
+/* Action buttons */
+.home-chatBtn, .home-shopBtn {
   width: 100%;
-  padding: 12px;
-  background: #003087;
+  padding: 14px;
   color: white;
   border: none;
-  border-radius: 4px;
-  font-size: 14px;
-  font-weight: 700;
+  border-radius: 0;
+  font-size: 15px;
+  font-weight: 600;
   cursor: pointer;
-  font-family: inherit;
-  transition: background-color 0.2s;
-  margin-top: 8px;
+  transition: all 0.2s;
+  margin-top: 12px;
+}
+
+.home-chatBtn {
+  background: #343a40;
 }
 .home-chatBtn:hover {
-  background: #002070;
+  background: #000;
 }
 
-/* Shop button */
 .home-shopBtn {
-  width: 100%;
-  padding: 10px;
-  background: #1A5276;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  font-size: 13px;
-  font-weight: 700;
-  cursor: pointer;
-  font-family: inherit;
-  transition: background-color 0.2s;
-  margin-top: 8px;
+  background: #000;
 }
 .home-shopBtn:hover {
-  background: #003087;
+  background: #333;
 }
 
 /* Loading / empty states */
-.home-loading {
+.home-loading, .home-empty {
   text-align: center;
-  padding: 24px;
-  color: #aaa;
-  font-size: 13px;
-}
-
-.home-empty {
-  text-align: center;
-  padding: 20px;
-  color: #aaa;
-  font-size: 13px;
+  padding: 40px;
+  color: #999;
+  font-size: 14px;
 }
 
 /* ===== Responsive ===== */
 @media (max-width: 1024px) {
-  .banner-title { font-size: 34px; }
-  .banner-content { padding: 0 60px; }
+  .banner-title { font-size: 40px; }
+  .home-content { gap: 30px; }
 }
 
 @media (max-width: 900px) {
@@ -582,47 +528,19 @@
   .home-side-col {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 16px;
+    gap: 20px;
   }
 
-  .banner-slide { height: 320px; }
-  .banner-title { font-size: 28px; }
-  .banner-subtitle { font-size: 15px; }
-  .banner-content { padding: 0 48px; }
-  .banner-dots { left: 48px; bottom: 44px; }
+  .banner-slide { height: 400px; }
+  .banner-title { font-size: 32px; }
+  .banner-subtitle { font-size: 16px; }
 }
 
 @media (max-width: 768px) {
-  .banner-slide { height: 260px; }
-  .banner-title { font-size: 22px; }
-  .banner-subtitle { font-size: 13px; margin-bottom: 18px; }
-  .banner-content { padding: 0 32px; max-width: 100%; }
-  .banner-emoji { font-size: 36px; }
-  .banner-cta { font-size: 13px; padding: 10px 20px; }
-  .banner-arrow { width: 36px; height: 36px; font-size: 20px; }
-  .banner-arrow--left  { left: 8px; }
-  .banner-arrow--right { right: 8px; }
-  .banner-dots { left: 32px; bottom: 36px; }
-
-  .home-serviceGrid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-
-  .home-quickServices,
-  .home-content {
-    padding-left: 16px;
-    padding-right: 16px;
-  }
-}
-
-@media (max-width: 480px) {
-  .banner-slide { height: 220px; }
-  .banner-title { font-size: 18px; }
-  .banner-subtitle { display: none; }
-  .banner-content { padding: 0 20px; }
-  .banner-badge { font-size: 11px; }
-  .banner-cta { font-size: 12px; padding: 9px 16px; }
-  .banner-dots { left: 20px; bottom: 28px; }
+  .banner-slide { height: 320px; }
+  .banner-title { font-size: 28px; }
+  .banner-subtitle { font-size: 15px; margin-bottom: 20px; }
+  .banner-emoji { font-size: 40px; }
 
   .home-serviceGrid {
     grid-template-columns: repeat(2, 1fr);

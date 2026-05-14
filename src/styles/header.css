@@ -190,6 +190,86 @@
   background: transparent;
 }
 
+/* ===== 군장용품 카테고리 드롭다운 ===== */
+.nav-dropdown-wrapper {
+  position: relative;
+  height: 72px;
+  display: flex;
+  align-items: center;
+}
+
+.nav-dropdown-trigger {
+  color: #d0deff;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 0 14px;
+  display: flex;
+  align-items: center;
+  height: 100%;
+  border-bottom: 3px solid transparent;
+  white-space: nowrap;
+  transition: color 0.2s, border-bottom-color 0.2s, background-color 0.2s;
+}
+
+.nav-dropdown-wrapper:hover .nav-dropdown-trigger {
+  color: #fff;
+  background-color: rgba(255,255,255,0.1);
+  border-bottom-color: #C8102E;
+}
+
+.nav-dropdown {
+  display: none;
+  position: absolute;
+  top: 72px;
+  left: 0;
+  background: #fff;
+  border-top: 3px solid #C8102E;
+  border: 1px solid #e0e0e0;
+  border-top: 3px solid #C8102E;
+  min-width: 160px;
+  z-index: 2000;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+}
+
+.nav-dropdown-wrapper:hover .nav-dropdown {
+  display: block;
+}
+
+.nav-dropdown a {
+  display: block;
+  padding: 11px 18px;
+  color: #333 !important;
+  font-size: 13px;
+  font-weight: 500;
+  border-bottom: 1px solid #f2f2f2;
+  white-space: nowrap;
+  text-decoration: none;
+  background: none !important;
+  border-left: none !important;
+  border-right: none !important;
+  border-top: none !important;
+  height: auto !important;
+  transition: background 0.15s, color 0.15s;
+}
+
+.nav-dropdown a:last-child {
+  border-bottom: none;
+}
+
+.nav-dropdown a:hover {
+  background: #f0f4ff !important;
+  color: #003087 !important;
+  text-decoration: none;
+}
+
+.nav-dropdown-empty {
+  display: block;
+  padding: 10px 18px;
+  color: #aaa;
+  font-size: 12px;
+}
+
 /* Auth area */
 .app-auth {
   display: flex;

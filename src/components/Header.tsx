@@ -2,6 +2,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/userAuth";
 import { useEffect, useState } from "react";
 import { userApi } from "../api/userApi";
+import { categoryApi } from "../api/categoryApi";
+import type { CategoryResponse } from "../api/categoryApi";
 import "../styles/header.css";
 import logo from "../assets/logo.png";
 
@@ -10,6 +12,7 @@ export default function Header() {
   const navigate = useNavigate();
   const [searchKeyword, setSearchKeyword] = useState('');
   const [username, setUsername] = useState<string | null>(null);
+  const [categories, setCategories] = useState<CategoryResponse[]>([]);
 
   useEffect(() => {
     if (isLoggedIn && userId) {
@@ -21,6 +24,12 @@ export default function Header() {
       setUsername(null);
     }
   }, [isLoggedIn, userId]);
+
+  useEffect(() => {
+    categoryApi.getCategories()
+      .then(res => setCategories(res.data?.data ?? []))
+      .catch(() => {});
+  }, []);
 
   const handleLogout = () => {
     logout();
@@ -70,7 +79,21 @@ export default function Header() {
         <nav className="app-nav">
           <Link to="/enlistment">입영 일정</Link>
           <Link to="/deferments">연기 신청</Link>
-          <Link to="/products">군장용품</Link>
+
+          {/* 군장용품 드롭다운 */}
+          <div className="nav-dropdown-wrapper">
+            <Link to="/products" className="nav-dropdown-trigger">군장용품</Link>
+            <div className="nav-dropdown">
+              <Link to="/products">전체</Link>
+              {categories.map(cat => (
+                <Link key={cat.id} to={`/products?categoryId=${cat.id}`}>{cat.name}</Link>
+              ))}
+              {categories.length === 0 && (
+                <span className="nav-dropdown-empty">카테고리 없음</span>
+              )}
+            </div>
+          </div>
+
           <Link to="/notices">공지사항</Link>
           <Link to="/qna">QnA</Link>
           {isLoggedIn && <Link to="/cart">장바구니</Link>}

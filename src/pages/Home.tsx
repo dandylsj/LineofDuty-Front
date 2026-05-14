@@ -2,6 +2,8 @@ import Header from '../components/Header';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/userAuth';
 import { useEffect, useState, useCallback } from 'react';
+import type { ChangeEvent } from 'react';
+import type { AxiosResponse } from 'axios';
 import { userApi } from '../api/userApi';
 import { weatherApi } from '../api/weatherApi';
 import { enlistmentApi } from '../api/enlistmentApi';
@@ -56,6 +58,17 @@ const QUICK_SERVICES = [
   { icon: '🛍️', label: '장바구니', path: '/cart' },
   { icon: '📦', label: '주문내역', path: '/orders' },
   { icon: '🔍', label: '통합 검색', path: '/search' },
+];
+
+const CITIES = [
+  { id: 'nonsan', name: '논산', label: '📍 충남 논산시 연무읍', nx: 36, ny: 127 },
+  { id: 'seoul', name: '서울', label: '📍 서울특별시', nx: 37, ny: 126 },
+  { id: 'incheon', name: '인천', label: '📍 인천광역시', nx: 37, ny: 126 },
+  { id: 'gyeonggi', name: '경기', label: '📍 경기도', nx: 37, ny: 127 },
+  { id: 'daegu', name: '대구', label: '📍 대구광역시', nx: 35, ny: 128 },
+  { id: 'daejeon', name: '대전', label: '📍 대전광역시', nx: 36, ny: 127 },
+  { id: 'busan', name: '부산', label: '📍 부산광역시', nx: 35, ny: 129 },
+  { id: 'gwangju', name: '광주', label: '📍 광주광역시', nx: 35, ny: 126 },
 ];
 
 // 배너 API 응답이 없을 때 보여줄 폴백 데이터
@@ -180,7 +193,7 @@ function BannerCarousel() {
           <h2 className="banner-title">{banner.title}</h2>
           <p className="banner-subtitle">
             {(banner.subtitle || '').split('\n').map((line: string, i: number) => (
-              <span key={`subtitle-${i}`}>{line}{i === 0 && <br />}</span>
+              <span key={line + i.toString()}>{line}{i === 0 && <br />}</span>
             ))}
           </p>
           <button
@@ -209,9 +222,9 @@ function BannerCarousel() {
       <button className="banner-arrow banner-arrow--right" onClick={next} aria-label="다음">›</button>
 
       <div className="banner-dots">
-        {banners.map((banner, i) => (
+        {banners.map((bannerItem: BannerResponse, i: number) => (
           <button
-            key={`dot-${banner.id}-${i}`}
+            key={`dot-${bannerItem.id}-${i}`}
             className={`banner-dot${i === current ? ' banner-dot--active' : ''}`}
             onClick={() => goTo(i)}
             aria-label={`슬라이드 ${i + 1}`}
@@ -234,13 +247,17 @@ export default function Home() {
   const navigate = useNavigate();
   const { isLoggedIn, userId } = useAuth();
   const [detailedUserInfo, setDetailedUserInfo] = useState<UserInfo | null>(null);
+
+  const [selectedCity, setSelectedCity] = useState(CITIES[0]);
   const [weather, setWeather] = useState<WeatherInfo | null>(null);
   const [weatherLoading, setWeatherLoading] = useState(true);
+
   const [thisWeekSchedules, setThisWeekSchedules] = useState<ScheduleItem[] | ScheduleData | null>(null);
   const [thisWeekLoading, setThisWeekLoading] = useState(true);
   const [notices, setNotices] = useState<NoticeItem[]>([]);
   const [noticesLoading, setNoticesLoading] = useState(true);
 
+  // 이번주 일정은 기본 논산 훈련소 좌표로 조회
   const NX = 36;
   const NY = 127;
 
@@ -248,23 +265,24 @@ export default function Home() {
     if (isLoggedIn && userId) {
       userApi
         .getProfile(userId)
-        .then((res) => setDetailedUserInfo(res.data?.data))
+        .then((res: AxiosResponse) => setDetailedUserInfo(res.data?.data))
         .catch(() => {});
     }
   }, [isLoggedIn, userId]);
 
   useEffect(() => {
+    // weatherLoading 은 별도 조작 없이 호출 결과만 반영 (ESLint set-state-in-effect 방지)
     weatherApi
-      .getTodayWeather()
-      .then((res) => setWeather(res.data?.data))
+      .getTodayWeather(selectedCity.nx, selectedCity.ny)
+      .then((res: AxiosResponse) => setWeather(res.data?.data))
       .catch(() => {})
       .finally(() => setWeatherLoading(false));
-  }, []);
+  }, [selectedCity]);
 
   useEffect(() => {
     enlistmentApi
       .getThisWeekSummary(NX, NY)
-      .then((res) => setThisWeekSchedules(res.data?.data))
+      .then((res: AxiosResponse) => setThisWeekSchedules(res.data?.data))
       .catch(() => {})
       .finally(() => setThisWeekLoading(false));
   }, []);
@@ -272,7 +290,7 @@ export default function Home() {
   useEffect(() => {
     noticeApi
       .getNoticeList({ page: 0, size: 6 })
-      .then((res) => {
+      .then((res: AxiosResponse) => {
         const data = res.data?.data;
         setNotices(Array.isArray(data) ? data : data?.content || []);
       })
@@ -284,11 +302,12 @@ export default function Home() {
     const data = thisWeekSchedules;
     if (Array.isArray(data)) return data;
     if (!data || typeof data !== 'object') return [];
-    const d = data as ScheduleData;
-    if (Array.isArray(d.enlistmentResponse)) return d.enlistmentResponse;
-    if (d.enlistmentResponse && typeof d.enlistmentResponse === 'object')
-      return [d.enlistmentResponse as ScheduleItem];
-    if (Array.isArray(d.content)) return d.content;
+    
+    // type narrowing 에 따라 data는 ScheduleData 형태가 됩니다.
+    if (Array.isArray(data.enlistmentResponse)) return data.enlistmentResponse;
+    if (data.enlistmentResponse && typeof data.enlistmentResponse === 'object')
+      return [data.enlistmentResponse];
+    if (Array.isArray(data.content)) return data.content;
     return [];
   })();
 
@@ -310,6 +329,128 @@ export default function Home() {
     });
   })();
 
+  // Notices 렌더링 도우미
+  const renderNotices = () => {
+    if (noticesLoading) return <p className="home-loading">불러오는 중...</p>;
+    if (notices.length === 0) return <p className="home-empty">공지사항이 없습니다</p>;
+    return (
+      <table className="home-noticeTable">
+        <thead>
+          <tr>
+            <th>제목</th>
+            <th style={{ width: 90 }}>등록일</th>
+          </tr>
+        </thead>
+        <tbody>
+          {notices.map((notice: NoticeItem) => (
+            <tr
+              key={notice.id}
+              onClick={() => navigate(`/notices/${notice.id}`)}
+            >
+              <td className="notice-title-cell">{notice.title}</td>
+              <td className="notice-date-cell">
+                {new Date(notice.createdAt).toLocaleDateString('ko-KR')}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    );
+  };
+
+  // 입영 일정 렌더링 도우미
+  const renderSchedules = () => {
+    if (thisWeekLoading) return <p className="home-loading">불러오는 중...</p>;
+    if (visibleThisWeekList.length === 0) return <p className="home-empty">이번주 입영 일정이 없습니다</p>;
+    return (
+      <div className="home-scheduleList">
+        {visibleThisWeekList.map((schedule: ScheduleItem, index: number) => (
+          <div
+            key={schedule?.scheduleId ?? schedule?.scheduledId ?? schedule?.id ?? index}
+            className="home-scheduleItem"
+            onClick={() => navigate('/enlistment')}
+          >
+            <div className="home-scheduleItem__badge">입영</div>
+            <div className="home-scheduleItem__info">
+              <div className="home-scheduleItem__date">
+                {schedule.enlistmentDate ?? schedule.date ?? '날짜 미정'}
+              </div>
+              {schedule.weather && (
+                <div className="home-scheduleItem__sub">
+                  {schedule.weather.temp}° · {schedule.weather.description}
+                </div>
+              )}
+            </div>
+            <div className="home-scheduleItem__slots">
+              잔여 {schedule.remainingSlots ?? schedule.remaining ?? 0}명
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  // 날씨 위젯 렌더링 도우미
+  const renderWeather = () => {
+    if (weatherLoading) return <p className="home-loading">불러오는 중...</p>;
+
+    const weatherContent = weather ? (
+      <>
+        <div className="home-weather-main">
+          <div className="home-weather-icon">
+            {getWeatherIcon(weather.skyStatus ?? weather.description ?? '')}
+          </div>
+          <div className="home-weather__temp">
+            {weather.temperature ?? weather.temp ?? '--'}°
+          </div>
+        </div>
+        <p className="home-weather__desc">
+          {weather.skyStatus ?? weather.description ?? '정보 없음'}
+        </p>
+      </>
+    ) : (
+      <>
+        <div className="home-weather-main">
+           <div className="home-weather-icon">☁️</div>
+           <div className="home-weather__temp">--°</div>
+        </div>
+        <p className="home-weather__desc">날씨 정보 없음</p>
+      </>
+    );
+
+    return (
+      <div className="home-weather-container">
+        <div className="home-weather-location">
+          📍
+          <select
+            value={selectedCity.id}
+            onChange={(e: ChangeEvent<HTMLSelectElement>) => {
+              const city = CITIES.find(c => c.id === e.target.value);
+              if (city) setSelectedCity(city);
+            }}
+            style={{
+              border: 'none',
+              background: 'transparent',
+              fontSize: 'inherit',
+              fontWeight: 'inherit',
+              color: 'inherit',
+              outline: 'none',
+              cursor: 'pointer',
+              appearance: 'none',
+              marginLeft: '4px'
+            }}
+          >
+            {CITIES.map(c => (
+              <option key={c.id} value={c.id}>{c.label.replace('📍 ', '')}</option>
+            ))}
+          </select>
+          <span style={{ fontSize: '10px', marginLeft: '4px' }}>▼</span>
+        </div>
+        {weatherContent}
+      </div>
+    );
+  };
+
   return (
     <div className="home-page">
       <Header />
@@ -328,11 +469,6 @@ export default function Home() {
               key={svc.path}
               className="home-serviceCard"
               onClick={() => navigate(svc.path)}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') navigate(svc.path);
-              }}
             >
               <div className="home-serviceCard__icon">{svc.icon}</div>
               <span className="home-serviceCard__label">{svc.label}</span>
@@ -357,33 +493,7 @@ export default function Home() {
               </button>
             </div>
             <div className="home-govCard__body" style={{ padding: 0 }}>
-              {noticesLoading ? (
-                <p className="home-loading">불러오는 중...</p>
-              ) : notices.length > 0 ? (
-                <table className="home-noticeTable">
-                  <thead>
-                    <tr>
-                      <th>제목</th>
-                      <th style={{ width: 90 }}>등록일</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {notices.map((notice) => (
-                      <tr
-                        key={notice.id}
-                        onClick={() => navigate(`/notices/${notice.id}`)}
-                      >
-                        <td className="notice-title-cell">{notice.title}</td>
-                        <td className="notice-date-cell">
-                          {new Date(notice.createdAt).toLocaleDateString('ko-KR')}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              ) : (
-                <p className="home-empty">공지사항이 없습니다</p>
-              )}
+              {renderNotices()}
             </div>
           </div>
 
@@ -399,41 +509,7 @@ export default function Home() {
               </button>
             </div>
             <div className="home-govCard__body">
-              {thisWeekLoading ? (
-                <p className="home-loading">불러오는 중...</p>
-              ) : visibleThisWeekList.length > 0 ? (
-                <div className="home-scheduleList">
-                  {visibleThisWeekList.map((schedule, index) => (
-                    <div
-                      key={
-                        schedule?.scheduleId ??
-                        schedule?.scheduledId ??
-                        schedule?.id ??
-                        index
-                      }
-                      className="home-scheduleItem"
-                      onClick={() => navigate('/enlistment')}
-                    >
-                      <div className="home-scheduleItem__badge">입영</div>
-                      <div className="home-scheduleItem__info">
-                        <div className="home-scheduleItem__date">
-                          {schedule.enlistmentDate ?? schedule.date ?? '날짜 미정'}
-                        </div>
-                        {schedule.weather && (
-                          <div className="home-scheduleItem__sub">
-                            {schedule.weather.temp}° · {schedule.weather.description}
-                          </div>
-                        )}
-                      </div>
-                      <div className="home-scheduleItem__slots">
-                        잔여 {schedule.remainingSlots ?? schedule.remaining ?? 0}명
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="home-empty">이번주 입영 일정이 없습니다</p>
-              )}
+              {renderSchedules()}
             </div>
           </div>
         </div>
@@ -446,33 +522,7 @@ export default function Home() {
               <h4 className="home-sideCard__header-title">오늘의 날씨</h4>
             </div>
             <div className="home-sideCard__body">
-              {weatherLoading ? (
-                <p className="home-loading">불러오는 중...</p>
-              ) : weather ? (
-                <div className="home-weather-container">
-                  <div className="home-weather-location">📍 충남 논산시 연무읍</div>
-                  <div className="home-weather-main">
-                    <div className="home-weather-icon">
-                      {getWeatherIcon(weather.skyStatus ?? weather.description ?? '')}
-                    </div>
-                    <div className="home-weather__temp">
-                      {weather.temperature ?? weather.temp ?? '--'}°
-                    </div>
-                  </div>
-                  <p className="home-weather__desc">
-                    {weather.skyStatus ?? weather.description ?? '정보 없음'}
-                  </p>
-                </div>
-              ) : (
-                <div className="home-weather-container">
-                  <div className="home-weather-location">📍 충남 논산시 연무읍</div>
-                  <div className="home-weather-main">
-                     <div className="home-weather-icon">☁️</div>
-                     <div className="home-weather__temp">--°</div>
-                  </div>
-                  <p className="home-weather__desc">날씨 정보 없음</p>
-                </div>
-              )}
+              {renderWeather()}
             </div>
           </div>
 

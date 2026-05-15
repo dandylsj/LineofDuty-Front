@@ -1,8 +1,8 @@
 import Header from '../components/Header';
+import KoreaWeatherMap from '../components/KoreaWeatherMap';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/userAuth';
 import { useEffect, useState, useCallback } from 'react';
-import type { ChangeEvent } from 'react';
 import type { AxiosResponse } from 'axios';
 import { userApi } from '../api/userApi';
 import { weatherApi } from '../api/weatherApi';
@@ -271,7 +271,8 @@ export default function Home() {
   }, [isLoggedIn, userId]);
 
   useEffect(() => {
-    // weatherLoading 은 별도 조작 없이 호출 결과만 반영 (ESLint set-state-in-effect 방지)
+    setWeatherLoading(true);
+    setWeather(null);
     weatherApi
       .getTodayWeather(selectedCity.nx, selectedCity.ny)
       .then((res: AxiosResponse) => setWeather(res.data?.data))
@@ -392,9 +393,9 @@ export default function Home() {
 
   // 날씨 위젯 렌더링 도우미
   const renderWeather = () => {
-    if (weatherLoading) return <p className="home-loading">불러오는 중...</p>;
-
-    const weatherContent = weather ? (
+    const weatherContent = weatherLoading ? (
+      <p className="home-loading" style={{ padding: '12px 0' }}>불러오는 중...</p>
+    ) : weather ? (
       <>
         <div className="home-weather-main">
           <div className="home-weather-icon">
@@ -411,8 +412,8 @@ export default function Home() {
     ) : (
       <>
         <div className="home-weather-main">
-           <div className="home-weather-icon">☁️</div>
-           <div className="home-weather__temp">--°</div>
+          <div className="home-weather-icon">☁️</div>
+          <div className="home-weather__temp">--°</div>
         </div>
         <p className="home-weather__desc">날씨 정보 없음</p>
       </>
@@ -420,32 +421,13 @@ export default function Home() {
 
     return (
       <div className="home-weather-container">
-        <div className="home-weather-location">
-          📍
-          <select
-            value={selectedCity.id}
-            onChange={(e: ChangeEvent<HTMLSelectElement>) => {
-              const city = CITIES.find(c => c.id === e.target.value);
-              if (city) setSelectedCity(city);
-            }}
-            style={{
-              border: 'none',
-              background: 'transparent',
-              fontSize: 'inherit',
-              fontWeight: 'inherit',
-              color: 'inherit',
-              outline: 'none',
-              cursor: 'pointer',
-              appearance: 'none',
-              marginLeft: '4px'
-            }}
-          >
-            {CITIES.map(c => (
-              <option key={c.id} value={c.id}>{c.label.replace('📍 ', '')}</option>
-            ))}
-          </select>
-          <span style={{ fontSize: '10px', marginLeft: '4px' }}>▼</span>
-        </div>
+        {/* 지역 선택 지도 */}
+        <KoreaWeatherMap
+          cities={CITIES}
+          selectedCityId={selectedCity.id}
+          onSelectCity={setSelectedCity}
+        />
+        {/* 날씨 정보 */}
         {weatherContent}
       </div>
     );

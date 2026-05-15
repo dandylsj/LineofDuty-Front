@@ -6,8 +6,8 @@ import { useEffect, useState, useCallback } from 'react';
 import type { AxiosResponse } from 'axios';
 import { userApi } from '../api/userApi';
 import { weatherApi } from '../api/weatherApi';
-import { enlistmentApi } from '../api/enlistmentApi';
 import { noticeApi } from '../api/noticeApi';
+import { productApi } from '../api/productApi';
 import { bannerApi } from '../api/bannerApi';
 import type { BannerResponse } from '../api/bannerApi';
 import '../styles/home.css';
@@ -25,39 +25,26 @@ interface WeatherInfo {
   description?: string;
 }
 
-interface ScheduleItem {
-  scheduleId?: number;
-  scheduledId?: number;
-  id?: number;
-  enlistmentDate?: string;
-  date?: string;
-  remainingSlots?: number;
-  remaining?: number;
-  weather?: { temp: number; description: string };
-}
-
-interface ScheduleData {
-  enlistmentResponse?: ScheduleItem | ScheduleItem[];
-  content?: ScheduleItem[];
-}
-
 interface NoticeItem {
   id: number;
   title: string;
   createdAt: string;
 }
 
-const QUICK_SERVICES = [
-  { icon: '📋', label: '입영 일정 조회', path: '/enlistment' },
-  { icon: '📝', label: '연기 신청', path: '/deferments' },
-  { icon: '🛒', label: '군장용품 구매', path: '/products' },
-  { icon: '📢', label: '공지사항', path: '/notices' },
-  { icon: '💬', label: 'QnA / 민원', path: '/qna' },
-  { icon: '🤖', label: '실시간 상담', path: '/chat' },
-  { icon: '👤', label: '마이페이지', path: '/mypage' },
-  { icon: '🛍️', label: '장바구니', path: '/cart' },
+interface ProductItem {
+  id: number;
+  name: string;
+  price: number;
+  imageUrl?: string;
+  description?: string;
+}
+
+const QUICK_ACTIONS = [
+  { icon: '🏆', label: '베스트', path: '/products?sort=best' },
+  { icon: '✨', label: '신상품', path: '/products?sort=new' },
+  { icon: '🛒', label: '장바구니', path: '/cart' },
   { icon: '📦', label: '주문내역', path: '/orders' },
-  { icon: '🔍', label: '통합 검색', path: '/search' },
+  { icon: '🎉', label: '이벤트', path: '/notices' },
 ];
 
 const CITIES = [
@@ -71,7 +58,6 @@ const CITIES = [
   { id: 'gwangju', name: '광주', label: '📍 광주광역시', nx: 35, ny: 126 },
 ];
 
-// 배너 API 응답이 없을 때 보여줄 폴백 데이터
 const FALLBACK_BANNERS: BannerResponse[] = [
   {
     id: 0,
@@ -121,8 +107,6 @@ const BG_GRADIENTS = [
   'linear-gradient(120deg, #001a4d 0%, #003087 50%, #0050A0 100%)',
   'linear-gradient(120deg, #0d2b0d 0%, #1e5c1a 50%, #2d7a27 100%)',
   'linear-gradient(120deg, #0d0d2e 0%, #1a1a6a 50%, #2a2a99 100%)',
-  'linear-gradient(120deg, #2a1500 0%, #5c3200 50%, #8a4c00 100%)',
-  'linear-gradient(120deg, #1a0033 0%, #3d0075 50%, #5a00aa 100%)',
 ];
 
 const getWeatherIcon = (status: string) => {
@@ -184,10 +168,7 @@ function BannerCarousel() {
     <div className="banner-carousel">
       <div className="banner-slide" style={{ background: bg }} key={current}>
         <div className="banner-content">
-          <div
-            className="banner-badge"
-            style={{ borderColor: accent, color: accent }}
-          >
+          <div className="banner-badge" style={{ borderColor: accent, color: accent }}>
             {banner.badge}
           </div>
           <h2 className="banner-title">{banner.title}</h2>
@@ -205,7 +186,6 @@ function BannerCarousel() {
           </button>
         </div>
 
-        {/* 이미지가 없을 때만 장식 원 표시 */}
         {!banner.imageUrl && (
           <div className="banner-deco">
             <div className="banner-deco__ring banner-deco__ring--1" />
@@ -213,8 +193,6 @@ function BannerCarousel() {
             <div className="banner-deco__ring banner-deco__ring--3" />
           </div>
         )}
-
-        {/* 이미지 있을 때 어두운 오버레이 */}
         {banner.imageUrl && <div className="banner-overlay" />}
       </div>
 
@@ -222,9 +200,9 @@ function BannerCarousel() {
       <button className="banner-arrow banner-arrow--right" onClick={next} aria-label="다음">›</button>
 
       <div className="banner-dots">
-        {banners.map((bannerItem: BannerResponse, i: number) => (
+        {banners.map((b: BannerResponse, i: number) => (
           <button
-            key={`dot-${bannerItem.id}-${i}`}
+            key={`dot-${b.id}-${i}`}
             className={`banner-dot${i === current ? ' banner-dot--active' : ''}`}
             onClick={() => goTo(i)}
             aria-label={`슬라이드 ${i + 1}`}
@@ -233,11 +211,7 @@ function BannerCarousel() {
       </div>
 
       <div className="banner-progress">
-        <div
-          className="banner-progress__bar"
-          style={{ background: accent }}
-          key={`${current}-progress`}
-        />
+        <div className="banner-progress__bar" style={{ background: accent }} key={`${current}-progress`} />
       </div>
     </div>
   );
@@ -252,14 +226,11 @@ export default function Home() {
   const [weather, setWeather] = useState<WeatherInfo | null>(null);
   const [weatherLoading, setWeatherLoading] = useState(true);
 
-  const [thisWeekSchedules, setThisWeekSchedules] = useState<ScheduleItem[] | ScheduleData | null>(null);
-  const [thisWeekLoading, setThisWeekLoading] = useState(true);
   const [notices, setNotices] = useState<NoticeItem[]>([]);
   const [noticesLoading, setNoticesLoading] = useState(true);
 
-  // 이번주 일정은 기본 논산 훈련소 좌표로 조회
-  const NX = 36;
-  const NY = 127;
+  const [featuredProducts, setFeaturedProducts] = useState<ProductItem[]>([]);
+  const [productsLoading, setProductsLoading] = useState(true);
 
   useEffect(() => {
     if (isLoggedIn && userId) {
@@ -281,14 +252,6 @@ export default function Home() {
   }, [selectedCity]);
 
   useEffect(() => {
-    enlistmentApi
-      .getThisWeekSummary(NX, NY)
-      .then((res: AxiosResponse) => setThisWeekSchedules(res.data?.data))
-      .catch(() => {})
-      .finally(() => setThisWeekLoading(false));
-  }, []);
-
-  useEffect(() => {
     noticeApi
       .getNoticeList({ page: 0, size: 6 })
       .then((res: AxiosResponse) => {
@@ -299,91 +262,58 @@ export default function Home() {
       .finally(() => setNoticesLoading(false));
   }, []);
 
-  const thisWeekList: ScheduleItem[] = (() => {
-    const data = thisWeekSchedules;
-    if (Array.isArray(data)) return data;
-    if (!data || typeof data !== 'object') return [];
-    
-    // type narrowing 에 따라 data는 ScheduleData 형태가 됩니다.
-    if (Array.isArray(data.enlistmentResponse)) return data.enlistmentResponse;
-    if (data.enlistmentResponse && typeof data.enlistmentResponse === 'object')
-      return [data.enlistmentResponse];
-    if (Array.isArray(data.content)) return data.content;
-    return [];
-  })();
+  useEffect(() => {
+    productApi
+      .getProducts({ page: 0, size: 3, sort: 'createdAt', direction: 'desc' })
+      .then((res: AxiosResponse) => {
+        const data = res.data?.data;
+        const list = Array.isArray(data) ? data : data?.content || [];
+        setFeaturedProducts(list);
+      })
+      .catch(() => {})
+      .finally(() => setProductsLoading(false));
+  }, []);
 
-  const visibleThisWeekList: ScheduleItem[] = (() => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const parseDate = (value?: string): Date | null => {
-      if (!value) return null;
-      const m = /^\d{4}-\d{2}-\d{2}$/.exec(value.trim());
-      if (!m) return null;
-      const [y, mo, d] = value.trim().split('-').map(Number);
-      return new Date(y, mo - 1, d);
-    };
-    return thisWeekList.filter((it) => {
-      const parsed = parseDate(it?.enlistmentDate ?? it?.date);
-      if (!parsed) return true;
-      parsed.setHours(0, 0, 0, 0);
-      return parsed >= today;
-    });
-  })();
-
-  // Notices 렌더링 도우미
   const renderNotices = () => {
     if (noticesLoading) return <p className="home-loading">불러오는 중...</p>;
     if (notices.length === 0) return <p className="home-empty">공지사항이 없습니다</p>;
     return (
-      <table className="home-noticeTable">
-        <thead>
-          <tr>
-            <th>제목</th>
-            <th style={{ width: 90 }}>등록일</th>
-          </tr>
-        </thead>
-        <tbody>
-          {notices.map((notice: NoticeItem) => (
-            <tr
-              key={notice.id}
-              onClick={() => navigate(`/notices/${notice.id}`)}
-            >
-              <td className="notice-title-cell">{notice.title}</td>
-              <td className="notice-date-cell">
-                {new Date(notice.createdAt).toLocaleDateString('ko-KR')}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <ul className="home-notice-list">
+        {notices.map((notice: NoticeItem) => (
+          <li key={notice.id} className="home-notice-item" onClick={() => navigate(`/notices/${notice.id}`)}>
+            <span className="home-notice-item__title">{notice.title}</span>
+            <span className="home-notice-item__date">
+              {new Date(notice.createdAt).toLocaleDateString('ko-KR')}
+            </span>
+          </li>
+        ))}
+      </ul>
     );
   };
 
-  // 입영 일정 렌더링 도우미
-  const renderSchedules = () => {
-    if (thisWeekLoading) return <p className="home-loading">불러오는 중...</p>;
-    if (visibleThisWeekList.length === 0) return <p className="home-empty">이번주 입영 일정이 없습니다</p>;
+  const renderFeaturedProducts = () => {
+    if (productsLoading) return <p className="home-loading">불러오는 중...</p>;
+    if (featuredProducts.length === 0) return <p className="home-empty">등록된 상품이 없습니다</p>;
     return (
-      <div className="home-scheduleList">
-        {visibleThisWeekList.map((schedule: ScheduleItem, index: number) => (
+      <div className="home-product-grid">
+        {featuredProducts.map((product: ProductItem) => (
           <div
-            key={schedule?.scheduleId ?? schedule?.scheduledId ?? schedule?.id ?? index}
-            className="home-scheduleItem"
-            onClick={() => navigate('/enlistment')}
+            key={product.id}
+            className="home-product-card"
+            onClick={() => navigate(`/products/${product.id}`)}
           >
-            <div className="home-scheduleItem__badge">입영</div>
-            <div className="home-scheduleItem__info">
-              <div className="home-scheduleItem__date">
-                {schedule.enlistmentDate ?? schedule.date ?? '날짜 미정'}
-              </div>
-              {schedule.weather && (
-                <div className="home-scheduleItem__sub">
-                  {schedule.weather.temp}° · {schedule.weather.description}
-                </div>
+            <div className="home-product-card__img">
+              {product.imageUrl ? (
+                <img src={product.imageUrl} alt={product.name} />
+              ) : (
+                <div className="home-product-card__img-placeholder">🪖</div>
               )}
             </div>
-            <div className="home-scheduleItem__slots">
-              잔여 {schedule.remainingSlots ?? schedule.remaining ?? 0}명
+            <div className="home-product-card__body">
+              <p className="home-product-card__name">{product.name}</p>
+              <p className="home-product-card__price">
+                {product.price.toLocaleString('ko-KR')}원
+              </p>
             </div>
           </div>
         ))}
@@ -391,12 +321,11 @@ export default function Home() {
     );
   };
 
-  // 날씨 위젯 렌더링 도우미
   const renderWeather = () => {
     const weatherContent = weatherLoading ? (
       <p className="home-loading" style={{ padding: '12px 0' }}>불러오는 중...</p>
     ) : weather ? (
-      <>
+      <div className="home-weather-result">
         <div className="home-weather-main">
           <div className="home-weather-icon">
             {getWeatherIcon(weather.skyStatus ?? weather.description ?? '')}
@@ -408,26 +337,28 @@ export default function Home() {
         <p className="home-weather__desc">
           {weather.skyStatus ?? weather.description ?? '정보 없음'}
         </p>
-      </>
+        <p className="home-weather__location">
+          📍 {selectedCity.label.replace('📍 ', '')}
+        </p>
+      </div>
     ) : (
-      <>
+      <div className="home-weather-result">
         <div className="home-weather-main">
           <div className="home-weather-icon">☁️</div>
           <div className="home-weather__temp">--°</div>
         </div>
         <p className="home-weather__desc">날씨 정보 없음</p>
-      </>
+        <p className="home-weather__location">📍 {selectedCity.label.replace('📍 ', '')}</p>
+      </div>
     );
 
     return (
       <div className="home-weather-container">
-        {/* 지역 선택 지도 */}
         <KoreaWeatherMap
           cities={CITIES}
           selectedCityId={selectedCity.id}
           onSelectCity={setSelectedCity}
         />
-        {/* 날씨 정보 */}
         {weatherContent}
       </div>
     );
@@ -437,111 +368,96 @@ export default function Home() {
     <div className="home-page">
       <Header />
 
-      {/* Wide Banner Carousel */}
+      {/* Hero Banner */}
       <BannerCarousel />
 
-      {/* Quick Services */}
-      <div className="home-quickServices">
-        <div className="home-section-header">
-          <h2 className="home-section-title">빠른 서비스</h2>
-        </div>
-        <div className="home-serviceGrid">
-          {QUICK_SERVICES.map((svc) => (
-            <div
-              key={svc.path}
-              className="home-serviceCard"
-              onClick={() => navigate(svc.path)}
-            >
-              <div className="home-serviceCard__icon">{svc.icon}</div>
-              <span className="home-serviceCard__label">{svc.label}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Main content */}
-      <div className="home-content">
-        {/* Left: notices + schedule */}
-        <div className="home-main-col">
-          {/* Notices */}
-          <div className="home-govCard">
-            <div className="home-govCard__header">
-              <h3 className="home-govCard__header-title">공지사항</h3>
+      {/* Quick Actions */}
+      <section className="home-quick-actions">
+        <div className="home-inner">
+          <div className="home-quick-grid">
+            {QUICK_ACTIONS.map((action) => (
               <button
-                className="home-govCard__header-more"
-                onClick={() => navigate('/notices')}
+                key={action.path}
+                className="home-quick-btn"
+                onClick={() => navigate(action.path)}
               >
-                더보기 ›
+                <span className="home-quick-btn__icon">{action.icon}</span>
+                <span className="home-quick-btn__label">{action.label}</span>
               </button>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Main Content — 8+4 grid */}
+      <div className="home-inner home-layout">
+
+        {/* ── Left column (8) ── */}
+        <div className="home-col-main">
+
+          {/* 공지사항 */}
+          <div className="home-card">
+            <div className="home-card__header">
+              <h3 className="home-card__title">공지사항</h3>
+              <button className="home-card__more" onClick={() => navigate('/notices')}>더보기 ›</button>
             </div>
-            <div className="home-govCard__body" style={{ padding: 0 }}>
+            <div className="home-card__body">
               {renderNotices()}
             </div>
           </div>
 
-          {/* This week schedule */}
-          <div className="home-govCard">
-            <div className="home-govCard__header">
-              <h3 className="home-govCard__header-title">이번주 입영 일정</h3>
-              <button
-                className="home-govCard__header-more"
-                onClick={() => navigate('/enlistment')}
-              >
-                더보기 ›
-              </button>
+          {/* 추천 상품 */}
+          <div className="home-card">
+            <div className="home-card__header">
+              <h3 className="home-card__title">추천 상품</h3>
+              <button className="home-card__more" onClick={() => navigate('/products')}>전체보기 ›</button>
             </div>
-            <div className="home-govCard__body">
-              {renderSchedules()}
+            <div className="home-card__body">
+              {renderFeaturedProducts()}
             </div>
           </div>
+
         </div>
 
-        {/* Right: side cards */}
-        <div className="home-side-col">
-          {/* Weather */}
-          <div className="home-sideCard">
-            <div className="home-sideCard__header">
-              <h4 className="home-sideCard__header-title">오늘의 날씨</h4>
+        {/* ── Right column (4) ── */}
+        <div className="home-col-side">
+
+          {/* 오늘의 날씨 */}
+          <div className="home-card">
+            <div className="home-card__header">
+              <h3 className="home-card__title">오늘의 날씨</h3>
             </div>
-            <div className="home-sideCard__body">
+            <div className="home-card__body">
               {renderWeather()}
             </div>
           </div>
 
-          {/* User info */}
-          <div className="home-sideCard">
-            <div className="home-sideCard__header">
-              <h4 className="home-sideCard__header-title">내 정보</h4>
+          {/* 내 정보 */}
+          <div className="home-card">
+            <div className="home-card__header">
+              <h3 className="home-card__title">내 정보</h3>
             </div>
-            <div className="home-sideCard__body">
+            <div className="home-card__body home-card__body--center">
               {isLoggedIn && detailedUserInfo ? (
                 <>
-                  <div className="home-userInfo__row">
-                    <span className="home-userInfo__label">이름</span>
-                    <span className="home-userInfo__value">{detailedUserInfo.username}</span>
+                  <div className="home-userInfo">
+                    <div className="home-userInfo__avatar">
+                      {detailedUserInfo.username?.charAt(0) ?? 'U'}
+                    </div>
+                    <div>
+                      <p className="home-userInfo__name">{detailedUserInfo.username}</p>
+                      <p className="home-userInfo__email">{detailedUserInfo.email}</p>
+                    </div>
                   </div>
-                  <div className="home-userInfo__row">
-                    <span className="home-userInfo__label">이메일</span>
-                    <span className="home-userInfo__value" style={{ fontSize: 12 }}>
-                      {detailedUserInfo.email}
-                    </span>
-                  </div>
-                  <button
-                    className="home-shopBtn"
-                    onClick={() => navigate('/mypage')}
-                  >
+                  <button className="home-btn home-btn--dark" onClick={() => navigate('/mypage')}>
                     마이페이지 바로가기
                   </button>
                 </>
               ) : (
                 <>
-                  <p style={{ fontSize: 13, color: '#888', marginBottom: 12 }}>
-                    로그인 후 이용하세요
-                  </p>
-                  <button
-                    className="home-chatBtn"
-                    onClick={() => navigate('/login')}
-                  >
+                  <div className="home-userInfo__avatar home-userInfo__avatar--guest">👤</div>
+                  <p className="home-guest-msg">로그인 후 이용하세요</p>
+                  <button className="home-btn home-btn--dark" onClick={() => navigate('/login')}>
                     로그인
                   </button>
                 </>
@@ -549,43 +465,39 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Chat */}
-          <div className="home-sideCard">
-            <div className="home-sideCard__header">
-              <h4 className="home-sideCard__header-title">실시간 상담</h4>
-            </div>
-            <div className="home-sideCard__body">
-              <div style={{ fontSize: 36, marginBottom: 8 }}>🤖</div>
-              <p style={{ fontSize: 13, color: '#666', margin: '0 0 4px' }}>
-                병역 관련 궁금한 사항을
-              </p>
-              <p style={{ fontSize: 13, color: '#666', margin: '0 0 12px' }}>
-                AI에게 바로 물어보세요
-              </p>
-              <button className="home-chatBtn" onClick={() => navigate('/chat')}>
+          {/* AI 상담 */}
+          <div className="home-card home-card--accent">
+            <div className="home-card__body home-card__body--center">
+              <div className="home-ai-icon">🤖</div>
+              <p className="home-ai-title">AI 병역 상담</p>
+              <p className="home-ai-desc">궁금한 사항을 24시간 AI에게 물어보세요</p>
+              <button className="home-btn home-btn--primary" onClick={() => navigate('/chat')}>
                 상담 시작하기
               </button>
             </div>
           </div>
 
-          {/* Shop */}
-          <div className="home-sideCard">
-            <div className="home-sideCard__header">
-              <h4 className="home-sideCard__header-title">군장용품 구매</h4>
-            </div>
-            <div className="home-sideCard__body">
-              <p style={{ fontSize: 13, color: '#666', margin: '0 0 12px' }}>
-                입영 전 필요한 물품을
-                <br />
-                미리 준비하세요
-              </p>
-              <button className="home-shopBtn" onClick={() => navigate('/products')}>
-                상품 보러가기
-              </button>
-            </div>
-          </div>
         </div>
       </div>
+
+      {/* Mobile Bottom Navigation */}
+      <nav className="home-mobile-nav">
+        <button className="home-mobile-nav__item" onClick={() => navigate('/')}>
+          <span>🏠</span><span>홈</span>
+        </button>
+        <button className="home-mobile-nav__item" onClick={() => navigate('/products')}>
+          <span>🛍️</span><span>상품</span>
+        </button>
+        <button className="home-mobile-nav__item" onClick={() => navigate('/enlistment')}>
+          <span>📋</span><span>입영</span>
+        </button>
+        <button className="home-mobile-nav__item" onClick={() => navigate('/cart')}>
+          <span>🛒</span><span>장바구니</span>
+        </button>
+        <button className="home-mobile-nav__item" onClick={() => navigate('/mypage')}>
+          <span>👤</span><span>MY</span>
+        </button>
+      </nav>
     </div>
   );
 }

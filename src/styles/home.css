@@ -1,622 +1,646 @@
-/* ===== Modern Shopping Mall Homepage ===== */
+/* ===================================================
+   Home Page — Line of Duty
+=================================================== */
 
+/* ── Reset / Base ── */
 .home-page {
-  background: #ffffff; /* 화이트 배경으로 변경 */
+  background: #f5f6f8;
   min-height: 100vh;
-  color: #333;
+  color: #222;
+  padding-bottom: 72px; /* space for mobile nav */
 }
 
-/* ===== Banner Carousel ===== */
+.home-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* ===================================================
+   Banner Carousel
+=================================================== */
 .banner-carousel {
   position: relative;
   width: 100%;
   overflow: hidden;
-  margin-bottom: 40px; /* 배너 아래 여백 추가 */
+  margin-bottom: 0;
+}
+
+.banner-carousel--loading {
+  height: 420px;
+  background: #eee;
 }
 
 .banner-slide {
   width: 100%;
-  height: 480px; /* 배너 높이 증가 */
+  height: 440px;
   display: flex;
   align-items: center;
   position: relative;
   overflow: hidden;
   animation: bannerFadeIn 0.5s ease;
-  background-color: #f8f9fa; /* 기본 배경색 */
 }
 
 @keyframes bannerFadeIn {
-  from { opacity: 0.5; transform: scale(1.01); }
+  from { opacity: 0.6; transform: scale(1.01); }
   to   { opacity: 1;   transform: scale(1); }
 }
 
 .banner-content {
   position: relative;
   z-index: 2;
-  padding: 0 10%; /* 반응형 패딩 */
-  max-width: 800px;
-}
-
-.banner-emoji {
-  font-size: 52px;
-  margin-bottom: 12px;
-  display: block;
-  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));
+  padding: 0 8%;
+  max-width: 700px;
 }
 
 .banner-badge {
   display: inline-block;
   border: 1px solid;
-  border-radius: 4px; /* 각진 테두리로 변경 */
+  border-radius: 4px;
   padding: 4px 12px;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   letter-spacing: 0.5px;
-  margin-bottom: 16px;
-  background-color: rgba(255, 255, 255, 0.2);
+  margin-bottom: 14px;
+  background: rgba(255,255,255,0.15);
 }
 
 .banner-title {
-  font-size: 48px; /* 폰트 크기 증가 */
+  font-size: 42px;
   font-weight: 800;
   color: #fff;
-  margin: 0 0 16px 0;
+  margin: 0 0 14px 0;
   line-height: 1.2;
   letter-spacing: -0.5px;
-  text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  text-shadow: 0 2px 10px rgba(0,0,0,0.35);
 }
 
 .banner-subtitle {
-  font-size: 18px;
-  color: rgba(255,255,255,0.9);
-  margin: 0 0 32px 0;
-  line-height: 1.6;
-  font-weight: 400;
+  font-size: 17px;
+  color: rgba(255,255,255,0.88);
+  margin: 0 0 28px 0;
+  line-height: 1.65;
 }
 
 .banner-cta {
   display: inline-block;
-  padding: 14px 32px;
-  background-color: #000; /* 검정색 버튼으로 모던하게 */
+  padding: 13px 28px;
   border: none;
-  border-radius: 0; /* 각진 버튼 */
-  font-size: 16px;
+  border-radius: 6px;
+  font-size: 15px;
   font-weight: 600;
   color: #fff;
   cursor: pointer;
   font-family: inherit;
-  transition: background-color 0.2s, transform 0.15s;
+  transition: opacity 0.2s, transform 0.15s;
 }
 .banner-cta:hover {
-  background-color: #333;
+  opacity: 0.88;
+  transform: translateY(-1px);
 }
 
-/* 이미지 배너 어두운 오버레이 - 조금 더 부드럽게 */
 .banner-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to right, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.1) 100%);
+  background: linear-gradient(to right, rgba(0,0,0,0.52) 0%, rgba(0,0,0,0.1) 100%);
   z-index: 1;
 }
 
-/* Decorative rings - 제거하거나 단순화 */
-.banner-deco {
-  display: none; /* 모던한 느낌을 위해 제거 */
-}
+.banner-deco { display: none; }
 
-/* Arrow buttons */
 .banner-arrow {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
   z-index: 10;
-  background: rgba(255,255,255,0.8); /* 밝은 배경에 어두운 아이콘 */
-  color: #000;
-  border: 1px solid #eee;
-  width: 48px;
-  height: 48px;
-  border-radius: 50%; /* 또는 0으로 주어 사각형으로 만들 수 있음 */
-  font-size: 20px;
-  line-height: 1;
+  background: rgba(255,255,255,0.85);
+  color: #222;
+  border: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  font-size: 22px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: background 0.2s, box-shadow 0.2s;
 }
 .banner-arrow:hover {
   background: #fff;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.15);
 }
-.banner-arrow--left  { left: 30px; }
-.banner-arrow--right { right: 30px; }
+.banner-arrow--left  { left: 24px; }
+.banner-arrow--right { right: 24px; }
 
-/* Dots */
 .banner-dots {
   position: absolute;
-  bottom: 40px;
+  bottom: 20px;
   left: 50%;
-  transform: translateX(-50%); /* 중앙 정렬로 변경 */
+  transform: translateX(-50%);
   display: flex;
-  gap: 12px;
+  gap: 8px;
   z-index: 10;
 }
 
 .banner-dot {
-  width: 10px;
-  height: 10px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
-  background: rgba(255,255,255,0.4);
+  background: rgba(255,255,255,0.45);
   border: none;
   cursor: pointer;
   padding: 0;
-  transition: background 0.2s;
+  transition: all 0.25s;
 }
 .banner-dot--active {
   background: #fff;
-  width: 24px; /* 활성화된 닷은 길게 */
-  border-radius: 5px;
+  width: 22px;
+  border-radius: 4px;
 }
 
-/* Progress bar - 숨김 (모던 쇼핑몰 느낌) */
-.banner-progress {
-  display: none;
+.banner-progress { display: none; }
+
+/* ===================================================
+   Quick Actions
+=================================================== */
+.home-quick-actions {
+  background: #fff;
+  border-bottom: 1px solid #e8eaed;
+  padding: 20px 0;
+  margin-bottom: 28px;
 }
 
-/* ===== Quick Services (카테고리 느낌으로 변경) ===== */
-.home-quickServices {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 24px 60px; /* 패딩 조정 */
-}
-
-.home-section-header {
+.home-quick-grid {
   display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  margin-bottom: 24px;
-  border-bottom: 2px solid #000; /* 강렬한 밑줄 */
-  padding-bottom: 12px;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
-.home-section-title {
-  font-size: 24px;
-  font-weight: 700;
-  color: #000;
-  margin: 0;
-  border: none;
-  padding: 0;
+.home-quick-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 24px;
+  min-width: 90px;
+  background: #f8f9fb;
+  border: 1px solid #e8eaed;
+  border-radius: 12px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.2s;
+}
+.home-quick-btn:hover {
+  background: #eef1ff;
+  border-color: #c5caff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(80,90,210,0.1);
 }
 
-.home-section-more {
-  font-size: 14px;
-  color: #666;
-  text-decoration: none;
-  font-weight: 500;
-}
-.home-section-more:hover {
-  color: #000;
+.home-quick-btn__icon {
+  font-size: 26px;
+  line-height: 1;
 }
 
-.home-serviceGrid {
+.home-quick-btn__label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #333;
+  white-space: nowrap;
+}
+
+/* ===================================================
+   Main Layout — 8+4 grid
+=================================================== */
+.home-layout {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: 2fr 1fr;
+  gap: 24px;
+  align-items: start;
+  padding-bottom: 40px;
+}
+
+.home-col-main {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.home-col-side {
+  display: flex;
+  flex-direction: column;
   gap: 20px;
 }
 
-.home-serviceCard {
+/* ===================================================
+   Card
+=================================================== */
+.home-card {
   background: #fff;
-  border: 1px solid #eaeaea; /* 연한 테두리 */
-  border-radius: 0; /* 각진 디자인 */
-  padding: 30px 16px;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
-}
-.home-serviceCard:hover {
-  border-color: #000;
-  box-shadow: none; /* 그림자 제거, 보더 강조 */
-  transform: translateY(-4px);
-}
-
-.home-serviceCard__icon {
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  background: #f8f9fa; /* 밝은 회색 배경 */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #333; /* SVG stroke color */
-  transition: background-color 0.3s, color 0.3s;
-}
-
-.home-serviceCard__icon svg {
-  width: 28px;
-  height: 28px;
-  stroke-width: 1.5;
-}
-
-.home-serviceCard:hover .home-serviceCard__icon {
-  background: #000;
-  color: #fff;
-}
-
-.home-serviceCard__label {
-  font-size: 15px;
-  font-weight: 600;
-  color: #111;
-  line-height: 1.4;
-}
-
-/* ===== Main content grid ===== */
-.home-content {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 24px 80px;
-  display: grid;
-  grid-template-columns: 2fr 1fr; /* 비율 조정 */
-  gap: 40px; /* 간격 넓힘 */
-}
-
-.home-main-col {
-  display: flex;
-  flex-direction: column;
-  gap: 40px;
-}
-
-.home-side-col {
-  display: flex;
-  flex-direction: column;
-  gap: 30px;
-}
-
-/* Gov card -> Board/List card style */
-.home-govCard {
-  background: #fff;
-  border: none;
-  border-top: 2px solid #000; /* 상단 강조 보더 */
-  border-radius: 0;
+  border-radius: 12px;
+  border: 1px solid #e8eaed;
   overflow: hidden;
 }
 
-.home-govCard__header {
-  background: transparent;
-  padding: 20px 0 16px;
+.home-card--accent {
+  background: linear-gradient(135deg, #1e3a6e 0%, #0050a0 100%);
+  border-color: transparent;
+}
+
+.home-card__header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid #eaeaea;
+  padding: 16px 20px 12px;
+  border-bottom: 1px solid #f0f2f5;
 }
 
-.home-govCard__header-title {
-  font-size: 20px;
+.home-card--accent .home-card__header {
+  border-bottom-color: rgba(255,255,255,0.15);
+}
+
+.home-card__title {
+  font-size: 16px;
   font-weight: 700;
-  color: #000;
+  color: #111;
   margin: 0;
 }
 
-.home-govCard__header-more {
+.home-card--accent .home-card__title {
+  color: #fff;
+}
+
+.home-card__more {
   font-size: 13px;
   color: #888;
-  cursor: pointer;
   background: none;
   border: none;
-  padding: 0;
-  font-weight: 500;
-}
-.home-govCard__header-more:hover {
-  color: #000;
-}
-
-.home-govCard__body {
-  padding: 16px 0;
-}
-
-/* Notice table */
-.home-noticeTable {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.home-noticeTable thead {
-  display: none; /* 헤더 숨김으로 심플하게 */
-}
-
-.home-noticeTable tbody tr {
-  border-bottom: 1px solid #f1f3f5;
   cursor: pointer;
-  transition: background-color 0.2s;
-}
-.home-noticeTable tbody tr:hover {
-  background-color: #fafafa;
-}
-.home-noticeTable tbody tr:last-child {
-  border-bottom: none;
-}
-
-.home-noticeTable td {
-  padding: 16px 8px;
-  font-size: 15px;
-  color: #333;
-}
-
-.home-noticeTable .notice-title-cell {
-  max-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  padding: 0;
+  font-family: inherit;
   font-weight: 500;
 }
+.home-card__more:hover { color: #333; }
 
-.home-noticeTable .notice-date-cell {
-  white-space: nowrap;
-  color: #999;
-  font-size: 13px;
-  text-align: right;
-  width: 100px;
+.home-card__body {
+  padding: 12px 20px 16px;
 }
 
-/* Schedule list */
-.home-scheduleList {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
+.home-card__body--center {
+  text-align: center;
+  padding: 20px;
 }
 
-.home-scheduleItem {
+/* ===================================================
+   Notice List
+=================================================== */
+.home-notice-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.home-notice-item {
   display: flex;
   align-items: center;
-  padding: 16px 8px;
-  border-bottom: 1px solid #f1f3f5;
-  gap: 16px;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid #f3f4f6;
   cursor: pointer;
-  transition: background-color 0.2s;
+  gap: 12px;
+  transition: background 0.15s;
 }
-.home-scheduleItem:last-child {
-  border-bottom: none;
-}
-.home-scheduleItem:hover {
-  background-color: #fafafa;
-}
+.home-notice-item:last-child { border-bottom: none; }
+.home-notice-item:hover { background: #fafbfc; margin: 0 -20px; padding: 12px 20px; }
 
-.home-scheduleItem__badge {
-  flex: 0 0 auto;
-  background: #000; /* 검정색 배지 */
-  color: #fff;
-  border-radius: 0;
-  padding: 6px 12px;
-  font-size: 12px;
-  font-weight: 600;
-  text-align: center;
-  min-width: 70px;
-}
-
-.home-scheduleItem__info {
+.home-notice-item__title {
+  font-size: 14px;
+  color: #222;
+  font-weight: 500;
   flex: 1;
-  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.home-scheduleItem__date {
-  font-size: 15px;
-  font-weight: 600;
-  color: #000;
+.home-notice-item__date {
+  font-size: 12px;
+  color: #aaa;
+  flex-shrink: 0;
 }
 
-.home-scheduleItem__sub {
-  font-size: 13px;
-  color: #777;
+/* ===================================================
+   Featured Products
+=================================================== */
+.home-product-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
   margin-top: 4px;
 }
 
-.home-scheduleItem__slots {
+.home-product-card {
+  border: 1px solid #e8eaed;
+  border-radius: 10px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: box-shadow 0.2s, transform 0.2s;
+  background: #fff;
+}
+.home-product-card:hover {
+  box-shadow: 0 6px 20px rgba(0,0,0,0.09);
+  transform: translateY(-3px);
+}
+
+.home-product-card__img {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  background: #f5f6f8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.home-product-card__img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.home-product-card__img-placeholder {
+  font-size: 40px;
+}
+
+.home-product-card__body {
+  padding: 10px 12px 12px;
+}
+
+.home-product-card__name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #222;
+  margin: 0 0 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.home-product-card__price {
   font-size: 14px;
   font-weight: 700;
-  color: #d90429; /* 빨간색으로 강조 */
-  white-space: nowrap;
-}
-
-/* Side cards */
-.home-sideCard {
-  background: #fff;
-  border: 1px solid #eaeaea;
-  border-radius: 0;
-  padding: 24px;
-}
-
-.home-sideCard__header {
-  background: transparent;
-  padding: 0 0 16px;
-  border-bottom: 1px solid #eaeaea;
-  margin-bottom: 16px;
-}
-
-.home-sideCard__header-title {
-  font-size: 16px;
-  font-weight: 700;
-  color: #000;
+  color: #0050a0;
   margin: 0;
 }
 
-.home-sideCard__body {
-  padding: 0;
-  text-align: center;
-}
-
-/* Weather card newly styled */
+/* ===================================================
+   Weather Widget
+=================================================== */
 .home-weather-container {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 10px 0;
+  align-items: stretch;
 }
 
-.home-weather-location {
-  font-size: 13px;
-  font-weight: 600;
-  color: #555;
-  margin-bottom: 20px;
-  background: #f1f3f5;
-  padding: 6px 14px;
-  border-radius: 20px;
-  display: inline-block;
-  letter-spacing: 0.5px;
+.home-weather-result {
+  text-align: center;
+  padding: 12px 0 4px;
 }
 
 .home-weather-main {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 16px;
-  margin-bottom: 12px;
+  gap: 12px;
+  margin-bottom: 6px;
 }
 
 .home-weather-icon {
-  font-size: 48px;
+  font-size: 40px;
   line-height: 1;
 }
 
 .home-weather__temp {
-  font-size: 48px;
+  font-size: 44px;
   font-weight: 800;
-  color: #000;
+  color: #111;
   line-height: 1;
-  margin: 0; /* Remove old margin */
 }
 
 .home-weather__desc {
-  font-size: 15px;
+  font-size: 14px;
   color: #666;
-  margin: 0;
+  margin: 0 0 6px;
   font-weight: 500;
 }
 
-/* User info card */
-.home-userInfo__row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px 0;
-  border-bottom: 1px dashed #eaeaea;
-  font-size: 14px;
-}
-.home-userInfo__row:last-child {
-  border-bottom: none;
-}
-.home-userInfo__label {
-  color: #888;
-}
-.home-userInfo__value {
-  color: #000;
+.home-weather__location {
+  font-size: 12px;
+  color: #0050a0;
+  background: #eef4ff;
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 20px;
   font-weight: 600;
+  margin: 0;
 }
 
-/* Action buttons */
-.home-chatBtn, .home-shopBtn {
-  width: 100%;
-  padding: 14px;
-  color: white;
-  border: none;
-  border-radius: 0;
+/* ===================================================
+   User Info Card
+=================================================== */
+.home-userInfo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  text-align: left;
+}
+
+.home-userInfo__avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #0050a0, #00aeef);
+  color: #fff;
+  font-size: 20px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.home-userInfo__avatar--guest {
+  background: #e8eaed;
+  color: #888;
+  font-size: 22px;
+  margin: 0 auto 12px;
+}
+
+.home-userInfo__name {
   font-size: 15px;
+  font-weight: 700;
+  color: #111;
+  margin: 0 0 2px;
+}
+
+.home-userInfo__email {
+  font-size: 12px;
+  color: #888;
+  margin: 0;
+  word-break: break-all;
+}
+
+.home-guest-msg {
+  font-size: 13px;
+  color: #888;
+  margin: 0 0 14px;
+}
+
+/* ===================================================
+   AI Chat Card
+=================================================== */
+.home-ai-icon {
+  font-size: 36px;
+  margin-bottom: 10px;
+}
+
+.home-ai-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 6px;
+}
+
+.home-ai-desc {
+  font-size: 13px;
+  color: rgba(255,255,255,0.8);
+  margin: 0 0 16px;
+  line-height: 1.5;
+}
+
+/* ===================================================
+   Buttons
+=================================================== */
+.home-btn {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
   font-weight: 600;
   cursor: pointer;
+  font-family: inherit;
   transition: all 0.2s;
-  margin-top: 12px;
+  margin-top: 4px;
 }
 
-.home-chatBtn {
-  background: #343a40;
+.home-btn--dark {
+  background: #1a1a2e;
+  color: #fff;
 }
-.home-chatBtn:hover {
-  background: #000;
+.home-btn--dark:hover { background: #000; }
+
+.home-btn--primary {
+  background: rgba(255,255,255,0.22);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.35);
+}
+.home-btn--primary:hover {
+  background: rgba(255,255,255,0.32);
 }
 
-.home-shopBtn {
-  background: #000;
-}
-.home-shopBtn:hover {
-  background: #333;
-}
-
-/* Loading / empty states */
+/* ===================================================
+   Loading / Empty
+=================================================== */
 .home-loading, .home-empty {
   text-align: center;
-  padding: 40px;
-  color: #999;
-  font-size: 14px;
+  padding: 32px 16px;
+  color: #bbb;
+  font-size: 13px;
 }
 
-/* ===== Korea Weather Map ===== */
-.korea-map-wrapper {
-  width: 100%;
+/* ===================================================
+   Mobile Bottom Navigation
+=================================================== */
+.home-mobile-nav {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  background: #fff;
+  border-top: 1px solid #e8eaed;
+  z-index: 100;
+  padding: 0 8px;
+  justify-content: space-around;
+  align-items: center;
+  box-shadow: 0 -2px 12px rgba(0,0,0,0.07);
+}
+
+.home-mobile-nav__item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 14px;
+  gap: 3px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  padding: 6px 10px;
+  border-radius: 8px;
+  transition: background 0.15s;
+  color: #555;
 }
+.home-mobile-nav__item:active { background: #f0f2f5; }
+.home-mobile-nav__item span:first-child { font-size: 22px; }
+.home-mobile-nav__item span:last-child  { font-size: 10px; font-weight: 600; }
 
-.korea-map-svg {
-  width: 100%;
-  max-width: 210px;
-  height: auto;
-  border-radius: 10px;
-  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.12));
-}
-
-.korea-map-label {
-  font-size: 12px;
-  color: #1a4fa0;
-  font-weight: 600;
-  letter-spacing: 0.2px;
-  background: #eef4fd;
-  padding: 4px 12px;
-  border-radius: 20px;
-}
-
-/* ===== Responsive ===== */
+/* ===================================================
+   Responsive
+=================================================== */
 @media (max-width: 1024px) {
-  .banner-title { font-size: 40px; }
-  .home-content { gap: 30px; }
+  .banner-title { font-size: 36px; }
+  .home-layout  { gap: 20px; }
 }
 
 @media (max-width: 900px) {
-  .home-serviceGrid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-
-  .home-content {
+  .home-layout {
     grid-template-columns: 1fr;
   }
-
-  .home-side-col {
+  .home-col-side {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 20px;
+    gap: 16px;
   }
-
-  .banner-slide { height: 400px; }
-  .banner-title { font-size: 32px; }
-  .banner-subtitle { font-size: 16px; }
+  .banner-slide { height: 360px; }
+  .banner-title { font-size: 30px; }
 }
 
 @media (max-width: 768px) {
-  .banner-slide { height: 320px; }
-  .banner-title { font-size: 28px; }
-  .banner-subtitle { font-size: 15px; margin-bottom: 20px; }
-  .banner-emoji { font-size: 40px; }
+  .banner-slide  { height: 280px; }
+  .banner-title  { font-size: 24px; }
+  .banner-subtitle { font-size: 14px; margin-bottom: 18px; }
 
-  .home-serviceGrid {
-    grid-template-columns: repeat(2, 1fr);
-  }
+  .home-quick-btn { min-width: 72px; padding: 12px 14px; }
+  .home-quick-btn__icon { font-size: 22px; }
+  .home-quick-btn__label { font-size: 11px; }
 
-  .home-side-col {
-    grid-template-columns: 1fr;
-  }
+  .home-col-side { grid-template-columns: 1fr; }
+
+  .home-product-grid { grid-template-columns: repeat(2, 1fr); }
+
+  .home-mobile-nav { display: flex; }
+
+  .home-page { padding-bottom: 72px; }
+
+  .banner-arrow--left  { left: 12px; }
+  .banner-arrow--right { right: 12px; }
+}
+
+@media (max-width: 480px) {
+  .home-inner { padding: 0 14px; }
+  .home-quick-grid { gap: 6px; }
+  .home-product-grid { grid-template-columns: 1fr; }
 }

@@ -10,6 +10,12 @@ import { noticeApi } from '../api/noticeApi';
 import { productApi } from '../api/productApi';
 import { bannerApi } from '../api/bannerApi';
 import type { BannerResponse } from '../api/bannerApi';
+import {
+  Trophy, Sparkles, ShoppingCart, Package, Gift,
+  Home as HomeIcon, ShoppingBag, ClipboardList, User,
+  Bot, MapPin, Sun, Cloud, CloudRain, Snowflake, CloudLightning, PartlyCloudy,
+  ChevronLeft, ChevronRight, Shield,
+} from 'lucide-react';
 import '../styles/home.css';
 
 interface UserInfo {
@@ -40,22 +46,22 @@ interface ProductItem {
 }
 
 const QUICK_ACTIONS = [
-  { icon: '🏆', label: '베스트', path: '/products?sort=best' },
-  { icon: '✨', label: '신상품', path: '/products?sort=new' },
-  { icon: '🛒', label: '장바구니', path: '/cart' },
-  { icon: '📦', label: '주문내역', path: '/orders' },
-  { icon: '🎉', label: '이벤트', path: '/notices' },
+  { Icon: Trophy,       label: '베스트',  path: '/products?sort=best' },
+  { Icon: Sparkles,     label: '신상품',  path: '/products?sort=new' },
+  { Icon: ShoppingCart, label: '장바구니', path: '/cart' },
+  { Icon: Package,      label: '주문내역', path: '/orders' },
+  { Icon: Gift,         label: '이벤트',  path: '/notices' },
 ];
 
 const CITIES = [
-  { id: 'nonsan', name: '논산', label: '📍 충남 논산시 연무읍', nx: 36, ny: 127 },
-  { id: 'seoul', name: '서울', label: '📍 서울특별시', nx: 37, ny: 126 },
-  { id: 'incheon', name: '인천', label: '📍 인천광역시', nx: 37, ny: 126 },
-  { id: 'gyeonggi', name: '경기', label: '📍 경기도', nx: 37, ny: 127 },
-  { id: 'daegu', name: '대구', label: '📍 대구광역시', nx: 35, ny: 128 },
-  { id: 'daejeon', name: '대전', label: '📍 대전광역시', nx: 36, ny: 127 },
-  { id: 'busan', name: '부산', label: '📍 부산광역시', nx: 35, ny: 129 },
-  { id: 'gwangju', name: '광주', label: '📍 광주광역시', nx: 35, ny: 126 },
+  { id: 'nonsan',   name: '논산', label: '📍 충남 논산시 연무읍', nx: 36, ny: 127 },
+  { id: 'seoul',    name: '서울', label: '📍 서울특별시',         nx: 37, ny: 126 },
+  { id: 'incheon',  name: '인천', label: '📍 인천광역시',         nx: 37, ny: 126 },
+  { id: 'gyeonggi', name: '경기', label: '📍 경기도',             nx: 37, ny: 127 },
+  { id: 'daegu',    name: '대구', label: '📍 대구광역시',         nx: 35, ny: 128 },
+  { id: 'daejeon',  name: '대전', label: '📍 대전광역시',         nx: 36, ny: 127 },
+  { id: 'busan',    name: '부산', label: '📍 부산광역시',         nx: 35, ny: 129 },
+  { id: 'gwangju',  name: '광주', label: '📍 광주광역시',         nx: 35, ny: 126 },
 ];
 
 const FALLBACK_BANNERS: BannerResponse[] = [
@@ -109,15 +115,17 @@ const BG_GRADIENTS = [
   'linear-gradient(120deg, #0d0d2e 0%, #1a1a6a 50%, #2a2a99 100%)',
 ];
 
-const getWeatherIcon = (status: string) => {
-  if (!status) return '☁️';
-  if (status.includes('맑음') || status.includes('해')) return '☀️';
-  if (status.includes('구름') || status.includes('흐림')) return '☁️';
-  if (status.includes('비')) return '🌧️';
-  if (status.includes('눈')) return '❄️';
-  if (status.includes('번개') || status.includes('뇌우')) return '⛈️';
-  return '🌤️';
-};
+function WeatherIcon({ status }: { status: string }) {
+  const s = status ?? '';
+  const props = { size: 36, strokeWidth: 1.5 };
+  if (s.includes('맑음') || s.includes('해')) return <Sun {...props} color="#f59e0b" />;
+  if (s.includes('비')) return <CloudRain {...props} color="#60a5fa" />;
+  if (s.includes('눈')) return <Snowflake {...props} color="#93c5fd" />;
+  if (s.includes('번개') || s.includes('뇌우')) return <CloudLightning {...props} color="#a78bfa" />;
+  if (s.includes('구름')) return <PartlyCloudy {...props} color="#94a3b8" />;
+  if (s.includes('흐림')) return <Cloud {...props} color="#94a3b8" />;
+  return <Cloud {...props} color="#94a3b8" />;
+}
 
 function BannerCarousel() {
   const navigate = useNavigate();
@@ -185,19 +193,15 @@ function BannerCarousel() {
             {banner.ctaText || '자세히 보기'} →
           </button>
         </div>
-
-        {!banner.imageUrl && (
-          <div className="banner-deco">
-            <div className="banner-deco__ring banner-deco__ring--1" />
-            <div className="banner-deco__ring banner-deco__ring--2" />
-            <div className="banner-deco__ring banner-deco__ring--3" />
-          </div>
-        )}
         {banner.imageUrl && <div className="banner-overlay" />}
       </div>
 
-      <button className="banner-arrow banner-arrow--left" onClick={prev} aria-label="이전">‹</button>
-      <button className="banner-arrow banner-arrow--right" onClick={next} aria-label="다음">›</button>
+      <button className="banner-arrow banner-arrow--left" onClick={prev} aria-label="이전">
+        <ChevronLeft size={20} />
+      </button>
+      <button className="banner-arrow banner-arrow--right" onClick={next} aria-label="다음">
+        <ChevronRight size={20} />
+      </button>
 
       <div className="banner-dots">
         {banners.map((b: BannerResponse, i: number) => (
@@ -208,10 +212,6 @@ function BannerCarousel() {
             aria-label={`슬라이드 ${i + 1}`}
           />
         ))}
-      </div>
-
-      <div className="banner-progress">
-        <div className="banner-progress__bar" style={{ background: accent }} key={`${current}-progress`} />
       </div>
     </div>
   );
@@ -306,7 +306,9 @@ export default function Home() {
               {product.imageUrl ? (
                 <img src={product.imageUrl} alt={product.name} />
               ) : (
-                <div className="home-product-card__img-placeholder">🪖</div>
+                <div className="home-product-card__img-placeholder">
+                  <Shield size={36} color="#94a3b8" strokeWidth={1.5} />
+                </div>
               )}
             </div>
             <div className="home-product-card__body">
@@ -328,7 +330,7 @@ export default function Home() {
       <div className="home-weather-result">
         <div className="home-weather-main">
           <div className="home-weather-icon">
-            {getWeatherIcon(weather.skyStatus ?? weather.description ?? '')}
+            <WeatherIcon status={weather.skyStatus ?? weather.description ?? ''} />
           </div>
           <div className="home-weather__temp">
             {weather.temperature ?? weather.temp ?? '--'}°
@@ -338,17 +340,23 @@ export default function Home() {
           {weather.skyStatus ?? weather.description ?? '정보 없음'}
         </p>
         <p className="home-weather__location">
-          📍 {selectedCity.label.replace('📍 ', '')}
+          <MapPin size={12} style={{ display: 'inline', marginRight: 4 }} />
+          {selectedCity.label.replace('📍 ', '')}
         </p>
       </div>
     ) : (
       <div className="home-weather-result">
         <div className="home-weather-main">
-          <div className="home-weather-icon">☁️</div>
+          <div className="home-weather-icon">
+            <Cloud size={36} color="#94a3b8" strokeWidth={1.5} />
+          </div>
           <div className="home-weather__temp">--°</div>
         </div>
         <p className="home-weather__desc">날씨 정보 없음</p>
-        <p className="home-weather__location">📍 {selectedCity.label.replace('📍 ', '')}</p>
+        <p className="home-weather__location">
+          <MapPin size={12} style={{ display: 'inline', marginRight: 4 }} />
+          {selectedCity.label.replace('📍 ', '')}
+        </p>
       </div>
     );
 
@@ -381,7 +389,7 @@ export default function Home() {
                 className="home-quick-btn"
                 onClick={() => navigate(action.path)}
               >
-                <span className="home-quick-btn__icon">{action.icon}</span>
+                <action.Icon size={26} strokeWidth={1.5} className="home-quick-btn__icon" />
                 <span className="home-quick-btn__label">{action.label}</span>
               </button>
             ))}
@@ -455,7 +463,9 @@ export default function Home() {
                 </>
               ) : (
                 <>
-                  <div className="home-userInfo__avatar home-userInfo__avatar--guest">👤</div>
+                  <div className="home-userInfo__avatar home-userInfo__avatar--guest">
+                    <User size={24} color="#888" strokeWidth={1.5} />
+                  </div>
                   <p className="home-guest-msg">로그인 후 이용하세요</p>
                   <button className="home-btn home-btn--dark" onClick={() => navigate('/login')}>
                     로그인
@@ -468,7 +478,9 @@ export default function Home() {
           {/* AI 상담 */}
           <div className="home-card home-card--accent">
             <div className="home-card__body home-card__body--center">
-              <div className="home-ai-icon">🤖</div>
+              <div className="home-ai-icon">
+                <Bot size={40} color="rgba(255,255,255,0.9)" strokeWidth={1.5} />
+              </div>
               <p className="home-ai-title">AI 병역 상담</p>
               <p className="home-ai-desc">궁금한 사항을 24시간 AI에게 물어보세요</p>
               <button className="home-btn home-btn--primary" onClick={() => navigate('/chat')}>
@@ -483,19 +495,24 @@ export default function Home() {
       {/* Mobile Bottom Navigation */}
       <nav className="home-mobile-nav">
         <button className="home-mobile-nav__item" onClick={() => navigate('/')}>
-          <span>🏠</span><span>홈</span>
+          <HomeIcon size={22} strokeWidth={1.5} />
+          <span>홈</span>
         </button>
         <button className="home-mobile-nav__item" onClick={() => navigate('/products')}>
-          <span>🛍️</span><span>상품</span>
+          <ShoppingBag size={22} strokeWidth={1.5} />
+          <span>상품</span>
         </button>
         <button className="home-mobile-nav__item" onClick={() => navigate('/enlistment')}>
-          <span>📋</span><span>입영</span>
+          <ClipboardList size={22} strokeWidth={1.5} />
+          <span>입영</span>
         </button>
         <button className="home-mobile-nav__item" onClick={() => navigate('/cart')}>
-          <span>🛒</span><span>장바구니</span>
+          <ShoppingCart size={22} strokeWidth={1.5} />
+          <span>장바구니</span>
         </button>
         <button className="home-mobile-nav__item" onClick={() => navigate('/mypage')}>
-          <span>👤</span><span>MY</span>
+          <User size={22} strokeWidth={1.5} />
+          <span>MY</span>
         </button>
       </nav>
     </div>

@@ -226,6 +226,12 @@ export default function Home() {
   const [weather, setWeather] = useState<WeatherInfo | null>(null);
   const [weatherLoading, setWeatherLoading] = useState(true);
 
+  const handleSelectCity = useCallback((city: typeof CITIES[0]) => {
+    setSelectedCity(city);
+    setWeatherLoading(true);
+    setWeather(null);
+  }, []);
+
   const [notices, setNotices] = useState<NoticeItem[]>([]);
   const [noticesLoading, setNoticesLoading] = useState(true);
 
@@ -242,8 +248,6 @@ export default function Home() {
   }, [isLoggedIn, userId]);
 
   useEffect(() => {
-    setWeatherLoading(true);
-    setWeather(null);
     weatherApi
       .getTodayWeather(selectedCity.nx, selectedCity.ny)
       .then((res: AxiosResponse) => setWeather(res.data?.data))
@@ -365,7 +369,7 @@ export default function Home() {
         <KoreaWeatherMap
           cities={CITIES}
           selectedCityId={selectedCity.id}
-          onSelectCity={setSelectedCity}
+          onSelectCity={handleSelectCity}
         />
         {weatherContent}
       </div>

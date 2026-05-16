@@ -13,7 +13,7 @@ import type { BannerResponse } from '../api/bannerApi';
 import {
   Trophy, Sparkles, ShoppingCart, Package, Gift,
   Home as HomeIcon, ShoppingBag, ClipboardList, User,
-  Bot, MapPin, Sun, Cloud, CloudRain, Snowflake, CloudLightning, PartlyCloudy,
+  Bot, MapPin, Sun, Cloud, CloudRain, Snowflake, CloudLightning, CloudSun,
   ChevronLeft, ChevronRight, Shield,
 } from 'lucide-react';
 import '../styles/home.css';
@@ -122,7 +122,7 @@ function WeatherIcon({ status }: { status: string }) {
   if (s.includes('비')) return <CloudRain {...props} color="#60a5fa" />;
   if (s.includes('눈')) return <Snowflake {...props} color="#93c5fd" />;
   if (s.includes('번개') || s.includes('뇌우')) return <CloudLightning {...props} color="#a78bfa" />;
-  if (s.includes('구름')) return <PartlyCloudy {...props} color="#94a3b8" />;
+  if (s.includes('구름')) return <CloudSun {...props} color="#94a3b8" />;
   if (s.includes('흐림')) return <Cloud {...props} color="#94a3b8" />;
   return <Cloud {...props} color="#94a3b8" />;
 }

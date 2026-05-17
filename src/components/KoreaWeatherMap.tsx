@@ -14,16 +14,20 @@ interface Props {
   onSelectCity: (city: City) => void;
 }
 
-// 지도 위 각 도시 버튼 위치 (% 기준)
+// 실제 위경도 → 컨테이너 % 변환
+// 경도 126.0°E~129.5°E → 가로 10%~90%
+// 위도 38.6°N~34.3°N  → 세로  5%~88%
+// left% = 10 + (lon - 126.0) / 3.5 * 80
+// top%  =  5 + (38.6 - lat) / 4.3 * 83
 const CITY_POSITIONS: Record<string, React.CSSProperties> = {
-  incheon:  { top: '20%', left: '25%' },
-  seoul:    { top: '18%', left: '45%' },
-  gyeonggi: { top: '22%', right: '18%' },
-  nonsan:   { top: '45%', left: '18%' },
-  daejeon:  { top: '42%', left: '47%' },
-  daegu:    { top: '40%', right: '12%' },
-  gwangju:  { bottom: '33%', left: '22%' },
-  busan:    { bottom: '26%', right: '20%' },
+  incheon:  { top: '27%', left: '26%' },  // 37.46°N 126.71°E
+  seoul:    { top: '24%', left: '34%' },  // 37.57°N 127.00°E
+  gyeonggi: { top: '33%', left: '48%' },  // 37.15°N 127.50°E (경기 동부)
+  nonsan:   { top: '51%', left: '35%' },  // 36.20°N 127.10°E (충남 논산)
+  daejeon:  { top: '48%', left: '42%' },  // 36.35°N 127.38°E
+  daegu:    { top: '57%', left: '68%' },  // 35.87°N 128.60°E
+  gwangju:  { top: '68%', left: '30%' },  // 35.16°N 126.85°E
+  busan:    { top: '67%', left: '79%' },  // 35.18°N 129.07°E
 };
 
 // 버튼에 표시할 짧은 라벨

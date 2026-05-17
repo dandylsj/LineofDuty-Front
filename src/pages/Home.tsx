@@ -15,6 +15,7 @@ import {
   Home as HomeIcon, ShoppingBag, ClipboardList, User,
   Bot, MapPin, Sun, Cloud, CloudRain, Snowflake, CloudLightning, CloudSun,
   ChevronLeft, ChevronRight, Shield, X, Bell,
+  Calendar, Shirt, Footprints, Droplets, Cpu, Star, ChevronRight as ArrowRight,
 } from 'lucide-react';
 import '../styles/home.css';
 
@@ -53,6 +54,99 @@ const QUICK_ACTIONS = [
   { Icon: Package,      label: '주문내역', path: '/orders' },
   { Icon: Gift,         label: '이벤트',  path: '/notices' },
 ];
+
+const CATEGORIES = [
+  { Icon: Shirt,      label: '군복/전투복', path: '/products?keyword=군복',   color: '#4a5c2a', bg: '#eef2e4' },
+  { Icon: Footprints, label: '군화/전투화', path: '/products?keyword=군화',   color: '#7c5c2a', bg: '#f5ede0' },
+  { Icon: Droplets,   label: '위생/세면',   path: '/products?keyword=세면',   color: '#2a5c7c', bg: '#e0eef5' },
+  { Icon: Package,    label: '생활용품',    path: '/products?keyword=생활',   color: '#5c2a7c', bg: '#eee0f5' },
+  { Icon: Cpu,        label: '전자기기',    path: '/products?keyword=전자',   color: '#2a7c5c', bg: '#e0f5ee' },
+  { Icon: Star,       label: '베스트',      path: '/products?sort=best',      color: '#7c4a2a', bg: '#f5e8e0' },
+];
+
+const DDAY_KEY = 'pentagon_enlistment_dday';
+
+function DdayCard({ onNavigate }: { onNavigate: (path: string) => void }) {
+  const [date, setDate] = useState(() => localStorage.getItem(DDAY_KEY) ?? '');
+  const [editing, setEditing] = useState(false);
+  const [input, setInput] = useState(date);
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const target = date ? new Date(date) : null;
+  if (target) target.setHours(0, 0, 0, 0);
+  const diff = target ? Math.ceil((target.getTime() - today.getTime()) / 86400000) : null;
+
+  const save = () => {
+    setDate(input);
+    localStorage.setItem(DDAY_KEY, input);
+    setEditing(false);
+  };
+
+  const ddayLabel =
+    diff === null ? null :
+    diff > 0  ? `D-${diff}` :
+    diff === 0 ? 'D-DAY' :
+                 `D+${Math.abs(diff)}`;
+
+  const ddayColor =
+    diff === null ? '#6b7280' :
+    diff > 30  ? '#15803d' :
+    diff > 7   ? '#b45309' :
+    diff >= 0  ? '#b91c1c' : '#6b7280';
+
+  return (
+    <div className="home-card home-dday-card">
+      <div className="home-card__header">
+        <h3 className="home-card__title">
+          <Calendar size={15} style={{ marginRight: 6, verticalAlign: 'middle', color: '#0050a0' }} />
+          입영 D-DAY
+        </h3>
+        <button className="home-card__more" onClick={() => { setInput(date); setEditing(true); }}>
+          {date ? '수정' : '설정'}
+        </button>
+      </div>
+      <div className="home-card__body home-card__body--center">
+        {editing ? (
+          <div className="home-dday-form">
+            <p className="home-dday-form__label">입영 날짜를 입력하세요</p>
+            <input
+              type="date"
+              className="home-dday-input"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+            />
+            <div className="home-dday-form__btns">
+              <button className="home-btn home-btn--dark" style={{ marginTop: 0 }} onClick={save}>저장</button>
+              <button className="home-btn home-btn--ghost" style={{ marginTop: 0 }} onClick={() => setEditing(false)}>취소</button>
+            </div>
+          </div>
+        ) : diff !== null ? (
+          <>
+            <div className="home-dday-count" style={{ color: ddayColor }}>{ddayLabel}</div>
+            <p className="home-dday-date">{new Date(date).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+            {diff >= 0 ? (
+              <p className="home-dday-msg">{diff === 0 ? '입영일입니다! 🎖️' : `입영까지 ${diff}일 남았습니다`}</p>
+            ) : (
+              <p className="home-dday-msg">군복무 중 🪖</p>
+            )}
+            <button className="home-btn home-btn--dark" style={{ marginTop: 8 }} onClick={() => onNavigate('/enlistment')}>
+              입영 정보 보기
+            </button>
+          </>
+        ) : (
+          <>
+            <Calendar size={36} color="#c8d6e8" strokeWidth={1.2} style={{ marginBottom: 8 }} />
+            <p className="home-dday-empty">입영 날짜를 설정하면<br />D-DAY를 확인할 수 있어요</p>
+            <button className="home-btn home-btn--dark" style={{ marginTop: 8 }} onClick={() => { setInput(''); setEditing(true); }}>
+              날짜 설정하기
+            </button>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
 
 const CITIES = [
   { id: 'nonsan',   name: '논산', label: '📍 충남 논산시 연무읍', nx: 36, ny: 127 },
@@ -369,7 +463,7 @@ export default function Home() {
 
   useEffect(() => {
     productApi
-      .getProducts({ page: 0, size: 3, sort: 'createdAt', direction: 'desc' })
+      .getProducts({ page: 0, size: 10, sort: 'createdAt', direction: 'desc' })
       .then((res: AxiosResponse) => {
         const data = res.data?.data;
         const list = Array.isArray(data) ? data : data?.content || [];
@@ -396,68 +490,84 @@ export default function Home() {
     );
   };
 
-  const [productIndex, setProductIndex] = useState(0);
+  const PRODUCTS_PER_PAGE = 5;
+  const [productPage, setProductPage] = useState(0);
+  const totalProductPages = Math.ceil(featuredProducts.length / PRODUCTS_PER_PAGE);
 
   useEffect(() => {
-    if (featuredProducts.length === 0) return;
+    if (totalProductPages <= 1) return;
     const timer = setInterval(() => {
-      setProductIndex((prev) => (prev + 1) % featuredProducts.length);
+      setProductPage((prev) => (prev + 1) % totalProductPages);
     }, 5000);
     return () => clearInterval(timer);
-  }, [featuredProducts]);
+  }, [totalProductPages]);
 
   const renderFeaturedProducts = () => {
     if (productsLoading) return <p className="home-loading">불러오는 중...</p>;
     if (featuredProducts.length === 0) return <p className="home-empty">등록된 상품이 없습니다</p>;
 
-    const product = featuredProducts[productIndex];
-    const pid = product.productId ?? product.id;
-    const imgUrl = product.productImageUrl;
+    const start = productPage * PRODUCTS_PER_PAGE;
+    const visible = featuredProducts.slice(start, start + PRODUCTS_PER_PAGE);
 
     return (
-      <div className="home-product-carousel">
-        <div
-          className="home-product-carousel__card"
-          onClick={() => navigate(`/products/${pid}`)}
-        >
-          <div className="home-product-carousel__img">
-            {imgUrl ? (
-              <img
-                src={imgUrl}
-                alt={product.name}
-                onError={(e) => {
-                  (e.currentTarget as HTMLImageElement).style.display = 'none';
-                  const ph = e.currentTarget.nextElementSibling as HTMLElement;
-                  if (ph) ph.style.display = 'flex';
-                }}
-              />
-            ) : null}
-            <div
-              className="home-product-card__img-placeholder"
-              style={{ display: imgUrl ? 'none' : 'flex' }}
-            >
-              <Shield size={32} color="#7a8c6a" strokeWidth={1.5} />
-              <span>이미지 없음</span>
-            </div>
-          </div>
-          <div className="home-product-carousel__body">
-            <p className="home-product-card__name">{product.name}</p>
-            <p className="home-product-card__price">
-              {product.price.toLocaleString('ko-KR')}원
-            </p>
-          </div>
+      <div className="home-product-slide">
+        <div className="home-product-slide__track">
+          {visible.map((product: ProductItem) => {
+            const pid = product.productId ?? product.id;
+            const imgUrl = product.productImageUrl;
+            return (
+              <div
+                key={pid}
+                className="home-product-slide__item"
+                onClick={() => navigate(`/products/${pid}`)}
+              >
+                <div className="home-product-slide__img">
+                  {imgUrl ? (
+                    <img
+                      src={imgUrl}
+                      alt={product.name}
+                      onError={(e) => {
+                        (e.currentTarget as HTMLImageElement).style.display = 'none';
+                        const ph = e.currentTarget.nextElementSibling as HTMLElement;
+                        if (ph) ph.style.display = 'flex';
+                      }}
+                    />
+                  ) : null}
+                  <div
+                    className="home-product-slide__placeholder"
+                    style={{ display: imgUrl ? 'none' : 'flex' }}
+                  >
+                    <Shield size={28} color="#7a8c6a" strokeWidth={1.5} />
+                  </div>
+                </div>
+                <div className="home-product-slide__info">
+                  <p className="home-product-slide__name">{product.name}</p>
+                  <p className="home-product-slide__price">
+                    {product.price.toLocaleString('ko-KR')}원
+                  </p>
+                </div>
+              </div>
+            );
+          })}
+          {/* 5개 미만일 때 빈 슬롯으로 레이아웃 유지 */}
+          {visible.length < PRODUCTS_PER_PAGE &&
+            Array.from({ length: PRODUCTS_PER_PAGE - visible.length }).map((_, i) => (
+              <div key={`empty-${i}`} className="home-product-slide__item home-product-slide__item--empty" />
+            ))}
         </div>
 
-        <div className="home-product-carousel__dots">
-          {featuredProducts.map((_: ProductItem, i: number) => (
-            <button
-              key={i}
-              className={`home-product-carousel__dot${i === productIndex ? ' home-product-carousel__dot--active' : ''}`}
-              onClick={(e) => { e.stopPropagation(); setProductIndex(i); }}
-              aria-label={`상품 ${i + 1}`}
-            />
-          ))}
-        </div>
+        {totalProductPages > 1 && (
+          <div className="home-product-slide__dots">
+            {Array.from({ length: totalProductPages }).map((_, i) => (
+              <button
+                key={i}
+                className={`home-product-slide__dot${i === productPage ? ' home-product-slide__dot--active' : ''}`}
+                onClick={() => setProductPage(i)}
+                aria-label={`페이지 ${i + 1}`}
+              />
+            ))}
+          </div>
+        )}
       </div>
     );
   };
@@ -545,98 +655,121 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Main Content — 8+4 grid */}
+      {/* ── Row 1: 공지사항 + 날씨 ── */}
       <div className="home-inner home-layout">
-
-        {/* ── Left column (8) ── */}
         <div className="home-col-main">
-
-          {/* 공지사항 */}
           <div className="home-card">
             <div className="home-card__header">
               <h3 className="home-card__title">공지사항</h3>
               <button className="home-card__more" onClick={() => navigate('/notices')}>더보기 ›</button>
             </div>
-            <div className="home-card__body">
-              {renderNotices()}
-            </div>
+            <div className="home-card__body">{renderNotices()}</div>
           </div>
-
-          {/* 추천 상품 */}
-          <div className="home-card">
-            <div className="home-card__header">
-              <h3 className="home-card__title">추천 상품</h3>
-              <button className="home-card__more" onClick={() => navigate('/products')}>전체보기 ›</button>
-            </div>
-            <div className="home-card__body">
-              {renderFeaturedProducts()}
-            </div>
-          </div>
-
         </div>
 
-        {/* ── Right column (4) ── */}
         <div className="home-col-side">
-
-          {/* 오늘의 날씨 */}
           <div className="home-card">
             <div className="home-card__header">
               <h3 className="home-card__title">오늘의 날씨</h3>
             </div>
-            <div className="home-card__body">
-              {renderWeather()}
-            </div>
+            <div className="home-card__body">{renderWeather()}</div>
           </div>
+        </div>
+      </div>
 
-          {/* 내 정보 */}
-          <div className="home-card">
-            <div className="home-card__header">
-              <h3 className="home-card__title">내 정보</h3>
-            </div>
-            <div className="home-card__body home-card__body--center">
-              {isLoggedIn && detailedUserInfo ? (
-                <>
-                  <div className="home-userInfo">
-                    <div className="home-userInfo__avatar">
-                      {detailedUserInfo.username?.charAt(0) ?? 'U'}
-                    </div>
-                    <div>
-                      <p className="home-userInfo__name">{detailedUserInfo.username}</p>
-                      <p className="home-userInfo__email">{detailedUserInfo.email}</p>
-                    </div>
+      {/* ── 추천 상품 (전체 너비, 5개 슬라이드) ── */}
+      <div className="home-inner">
+        <div className="home-card">
+          <div className="home-card__header">
+            <h3 className="home-card__title">추천 상품</h3>
+            <button className="home-card__more" onClick={() => navigate('/products')}>전체보기 ›</button>
+          </div>
+          <div className="home-card__body">{renderFeaturedProducts()}</div>
+        </div>
+      </div>
+
+      {/* ── Row 2: 내 정보 + AI 상담 + D-DAY (3열) ── */}
+      <div className="home-inner home-bottom-grid">
+
+        {/* 내 정보 */}
+        <div className="home-card">
+          <div className="home-card__header">
+            <h3 className="home-card__title">내 정보</h3>
+          </div>
+          <div className="home-card__body home-card__body--center">
+            {isLoggedIn && detailedUserInfo ? (
+              <>
+                <div className="home-userInfo">
+                  <div className="home-userInfo__avatar">
+                    {detailedUserInfo.username?.charAt(0) ?? 'U'}
                   </div>
-                  <button className="home-btn home-btn--dark" onClick={() => navigate('/mypage')}>
-                    마이페이지 바로가기
-                  </button>
-                </>
-              ) : (
-                <>
-                  <div className="home-userInfo__avatar home-userInfo__avatar--guest">
-                    <User size={24} color="#888" strokeWidth={1.5} />
+                  <div>
+                    <p className="home-userInfo__name">{detailedUserInfo.username}</p>
+                    <p className="home-userInfo__email">{detailedUserInfo.email}</p>
                   </div>
-                  <p className="home-guest-msg">로그인 후 이용하세요</p>
-                  <button className="home-btn home-btn--dark" onClick={() => navigate('/login')}>
-                    로그인
-                  </button>
-                </>
-              )}
+                </div>
+                <button className="home-btn home-btn--dark" onClick={() => navigate('/mypage')}>
+                  마이페이지 바로가기
+                </button>
+              </>
+            ) : (
+              <>
+                <div className="home-userInfo__avatar home-userInfo__avatar--guest">
+                  <User size={24} color="#888" strokeWidth={1.5} />
+                </div>
+                <p className="home-guest-msg">로그인 후 이용하세요</p>
+                <button className="home-btn home-btn--dark" onClick={() => navigate('/login')}>
+                  로그인
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* AI 상담 */}
+        <div className="home-card home-card--accent">
+          <div className="home-card__body home-card__body--center">
+            <div className="home-ai-icon">
+              <Bot size={40} color="rgba(255,255,255,0.9)" strokeWidth={1.5} />
+            </div>
+            <p className="home-ai-title">AI 병역 상담</p>
+            <p className="home-ai-desc">궁금한 사항을 24시간 AI에게 물어보세요</p>
+            <button className="home-btn home-btn--primary" onClick={() => navigate('/chat')}>
+              상담 시작하기
+            </button>
+          </div>
+        </div>
+
+        {/* 입영 D-DAY */}
+        <DdayCard onNavigate={navigate} />
+
+      </div>
+
+      {/* ── 카테고리 바로가기 ── */}
+      <div className="home-inner home-categories">
+        <div className="home-card">
+          <div className="home-card__header">
+            <h3 className="home-card__title">카테고리 바로가기</h3>
+            <button className="home-card__more" onClick={() => navigate('/products')}>
+              전체 상품 <ArrowRight size={13} style={{ verticalAlign: 'middle' }} />
+            </button>
+          </div>
+          <div className="home-card__body">
+            <div className="home-cat-grid">
+              {CATEGORIES.map((cat) => (
+                <button
+                  key={cat.path}
+                  className="home-cat-item"
+                  onClick={() => navigate(cat.path)}
+                >
+                  <div className="home-cat-icon" style={{ background: cat.bg, color: cat.color }}>
+                    <cat.Icon size={22} strokeWidth={1.5} />
+                  </div>
+                  <span className="home-cat-label">{cat.label}</span>
+                </button>
+              ))}
             </div>
           </div>
-
-          {/* AI 상담 */}
-          <div className="home-card home-card--accent">
-            <div className="home-card__body home-card__body--center">
-              <div className="home-ai-icon">
-                <Bot size={40} color="rgba(255,255,255,0.9)" strokeWidth={1.5} />
-              </div>
-              <p className="home-ai-title">AI 병역 상담</p>
-              <p className="home-ai-desc">궁금한 사항을 24시간 AI에게 물어보세요</p>
-              <button className="home-btn home-btn--primary" onClick={() => navigate('/chat')}>
-                상담 시작하기
-              </button>
-            </div>
-          </div>
-
         </div>
       </div>
 

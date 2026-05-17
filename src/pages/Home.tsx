@@ -308,12 +308,23 @@ export default function Home() {
           >
             <div className="home-product-card__img">
               {product.imageUrl ? (
-                <img src={product.imageUrl} alt={product.name} />
-              ) : (
-                <div className="home-product-card__img-placeholder">
-                  <Shield size={36} color="#94a3b8" strokeWidth={1.5} />
-                </div>
-              )}
+                <img
+                  src={product.imageUrl}
+                  alt={product.name}
+                  onError={(e) => {
+                    (e.currentTarget as HTMLImageElement).style.display = 'none';
+                    const placeholder = e.currentTarget.nextElementSibling as HTMLElement;
+                    if (placeholder) placeholder.style.display = 'flex';
+                  }}
+                />
+              ) : null}
+              <div
+                className="home-product-card__img-placeholder"
+                style={{ display: product.imageUrl ? 'none' : 'flex' }}
+              >
+                <Shield size={32} color="#7a8c6a" strokeWidth={1.5} />
+                <span>이미지 없음</span>
+              </div>
             </div>
             <div className="home-product-card__body">
               <p className="home-product-card__name">{product.name}</p>

@@ -7,7 +7,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'http://lsjyahoo.synology.me:8081',
+        target: 'https://lsjyahoo.synology.me:8443',
         changeOrigin: true,
       },
     },

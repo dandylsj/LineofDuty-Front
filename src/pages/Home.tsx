@@ -39,9 +39,10 @@ interface NoticeItem {
 
 interface ProductItem {
   id: number;
+  productId?: number;
   name: string;
   price: number;
-  imageUrl?: string;
+  productImageUrl?: string | null;
   description?: string;
 }
 
@@ -295,45 +296,68 @@ export default function Home() {
     );
   };
 
+  const [productIndex, setProductIndex] = useState(0);
+
+  useEffect(() => {
+    if (featuredProducts.length === 0) return;
+    const timer = setInterval(() => {
+      setProductIndex((prev) => (prev + 1) % featuredProducts.length);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, [featuredProducts]);
+
   const renderFeaturedProducts = () => {
     if (productsLoading) return <p className="home-loading">불러오는 중...</p>;
     if (featuredProducts.length === 0) return <p className="home-empty">등록된 상품이 없습니다</p>;
+
+    const product = featuredProducts[productIndex];
+    const pid = product.productId ?? product.id;
+    const imgUrl = product.productImageUrl;
+
     return (
-      <div className="home-product-grid">
-        {featuredProducts.map((product: ProductItem) => (
-          <div
-            key={product.id}
-            className="home-product-card"
-            onClick={() => navigate(`/products/${product.id}`)}
-          >
-            <div className="home-product-card__img">
-              {product.imageUrl ? (
-                <img
-                  src={product.imageUrl}
-                  alt={product.name}
-                  onError={(e) => {
-                    (e.currentTarget as HTMLImageElement).style.display = 'none';
-                    const placeholder = e.currentTarget.nextElementSibling as HTMLElement;
-                    if (placeholder) placeholder.style.display = 'flex';
-                  }}
-                />
-              ) : null}
-              <div
-                className="home-product-card__img-placeholder"
-                style={{ display: product.imageUrl ? 'none' : 'flex' }}
-              >
-                <Shield size={32} color="#7a8c6a" strokeWidth={1.5} />
-                <span>이미지 없음</span>
-              </div>
-            </div>
-            <div className="home-product-card__body">
-              <p className="home-product-card__name">{product.name}</p>
-              <p className="home-product-card__price">
-                {product.price.toLocaleString('ko-KR')}원
-              </p>
+      <div className="home-product-carousel">
+        <div
+          className="home-product-carousel__card"
+          onClick={() => navigate(`/products/${pid}`)}
+        >
+          <div className="home-product-carousel__img">
+            {imgUrl ? (
+              <img
+                src={imgUrl}
+                alt={product.name}
+                onError={(e) => {
+                  (e.currentTarget as HTMLImageElement).style.display = 'none';
+                  const ph = e.currentTarget.nextElementSibling as HTMLElement;
+                  if (ph) ph.style.display = 'flex';
+                }}
+              />
+            ) : null}
+            <div
+              className="home-product-card__img-placeholder"
+              style={{ display: imgUrl ? 'none' : 'flex' }}
+            >
+              <Shield size={32} color="#7a8c6a" strokeWidth={1.5} />
+              <span>이미지 없음</span>
             </div>
           </div>
-        ))}
+          <div className="home-product-carousel__body">
+            <p className="home-product-card__name">{product.name}</p>
+            <p className="home-product-card__price">
+              {product.price.toLocaleString('ko-KR')}원
+            </p>
+          </div>
+        </div>
+
+        <div className="home-product-carousel__dots">
+          {featuredProducts.map((_: ProductItem, i: number) => (
+            <button
+              key={i}
+              className={`home-product-carousel__dot${i === productIndex ? ' home-product-carousel__dot--active' : ''}`}
+              onClick={(e) => { e.stopPropagation(); setProductIndex(i); }}
+              aria-label={`상품 ${i + 1}`}
+            />
+          ))}
+        </div>
       </div>
     );
   };

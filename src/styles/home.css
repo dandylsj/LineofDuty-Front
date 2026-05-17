@@ -409,6 +409,84 @@
 }
 
 /* ===================================================
+   Product Carousel
+=================================================== */
+.home-product-carousel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.home-product-carousel__card {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  width: 100%;
+  cursor: pointer;
+  border-radius: 10px;
+  padding: 12px;
+  transition: background 0.2s;
+}
+.home-product-carousel__card:hover {
+  background: #f5f6f8;
+}
+
+.home-product-carousel__img {
+  width: 140px;
+  height: 140px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #f5f6f8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #e8eaed;
+}
+.home-product-carousel__img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.home-product-carousel__body {
+  flex: 1;
+  min-width: 0;
+}
+.home-product-carousel__body .home-product-card__name {
+  font-size: 16px;
+  white-space: normal;
+  margin-bottom: 8px;
+}
+.home-product-carousel__body .home-product-card__price {
+  font-size: 18px;
+}
+
+.home-product-carousel__dots {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  padding-bottom: 4px;
+}
+
+.home-product-carousel__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #d1d5db;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.25s;
+}
+.home-product-carousel__dot--active {
+  background: #0050a0;
+  width: 22px;
+  border-radius: 4px;
+}
+
+/* ===================================================
    Weather Widget
 =================================================== */
 .home-weather-container {

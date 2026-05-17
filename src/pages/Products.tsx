@@ -17,47 +17,66 @@ type Product = {
   categoryName?: string;
 };
 
+const PAGE_SIZE = 20;
+
 export default function Products() {
   const navigate = useNavigate();
   const location = useLocation();
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<CategoryResponse[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalElements, setTotalElements] = useState(0);
 
-  // Extract categoryId from URL if exists
   const searchParams = new URLSearchParams(location.search);
   const categoryIdParam = searchParams.get("categoryId");
   const selectedCategoryId = categoryIdParam ? Number(categoryIdParam) : null;
 
   useEffect(() => {
-    // Fetch categories
     categoryApi.getCategories()
       .then(res => setCategories(res.data?.data ?? []))
       .catch(() => {});
   }, []);
 
   useEffect(() => {
+    setCurrentPage(0);
+  }, [selectedCategoryId]);
+
+  useEffect(() => {
     const fetchProducts = async () => {
       setLoading(true);
       try {
-        const res = await productApi.getProducts();
-        let fetchedProducts: Product[] = res.data.data.content ?? res.data.data;
-        
-        // Frontend filtering by category if API doesn't support it directly
-        if (selectedCategoryId) {
-          fetchedProducts = fetchedProducts.filter(p => p.categoryId === selectedCategoryId);
+        const res = await productApi.getProducts({ page: currentPage, size: PAGE_SIZE });
+        const data = res.data.data;
+        // Spring Page 응답 구조 대응
+        if (data?.content) {
+          let items: Product[] = data.content;
+          if (selectedCategoryId) {
+            items = items.filter((p: Product) => p.categoryId === selectedCategoryId);
+          }
+          setProducts(items);
+          setTotalPages(data.totalPages ?? 1);
+          setTotalElements(data.totalElements ?? items.length);
+        } else {
+          // 배열로 내려오는 경우
+          let items: Product[] = Array.isArray(data) ? data : [];
+          if (selectedCategoryId) {
+            items = items.filter((p: Product) => p.categoryId === selectedCategoryId);
+          }
+          setProducts(items);
+          setTotalPages(1);
+          setTotalElements(items.length);
         }
-        
-        setProducts(fetchedProducts);
-      } catch (e) {
-        // ignore
+      } catch {
+        setProducts([]);
       } finally {
         setLoading(false);
       }
     };
 
     fetchProducts();
-  }, [selectedCategoryId]);
+  }, [currentPage, selectedCategoryId]);
 
   const handleCategoryClick = (id: number | null) => {
     if (id === null) {
@@ -97,7 +116,12 @@ export default function Products() {
         {/* Toolbar (Count & Sort) */}
         <div className="shop-toolbar">
           <div className="shop-total-count">
-            전체 <strong>{products.length}</strong>개
+            전체 <strong>{totalElements}</strong>개
+            {totalPages > 1 && (
+              <span className="shop-page-info">
+                &nbsp;({currentPage + 1} / {totalPages} 페이지)
+              </span>
+            )}
           </div>
           <div className="shop-sort-options">
             <button className="active">인기순</button>
@@ -170,6 +194,53 @@ export default function Products() {
                 </div>
               );
             })}
+          </div>
+        )}
+
+        {/* 페이지네이션 */}
+        {!loading && totalPages > 1 && (
+          <div className="shop-pagination">
+            <button
+              className="shop-page-btn"
+              onClick={() => { setCurrentPage(0); window.scrollTo(0, 0); }}
+              disabled={currentPage === 0}
+            >
+              «
+            </button>
+            <button
+              className="shop-page-btn"
+              onClick={() => { setCurrentPage(p => p - 1); window.scrollTo(0, 0); }}
+              disabled={currentPage === 0}
+            >
+              ‹
+            </button>
+
+            {Array.from({ length: totalPages }, (_, i) => i)
+              .filter(i => Math.abs(i - currentPage) <= 2)
+              .map(i => (
+                <button
+                  key={i}
+                  className={`shop-page-btn${i === currentPage ? ' shop-page-btn--active' : ''}`}
+                  onClick={() => { setCurrentPage(i); window.scrollTo(0, 0); }}
+                >
+                  {i + 1}
+                </button>
+              ))}
+
+            <button
+              className="shop-page-btn"
+              onClick={() => { setCurrentPage(p => p + 1); window.scrollTo(0, 0); }}
+              disabled={currentPage === totalPages - 1}
+            >
+              ›
+            </button>
+            <button
+              className="shop-page-btn"
+              onClick={() => { setCurrentPage(totalPages - 1); window.scrollTo(0, 0); }}
+              disabled={currentPage === totalPages - 1}
+            >
+              »
+            </button>
           </div>
         )}
       </main>

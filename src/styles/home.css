@@ -1010,7 +1010,8 @@
 /* 본문 */
 .np-body {
   padding: 24px 24px 20px;
-  max-height: 60vh;
+  min-height: 280px;
+  max-height: 75vh;
   overflow-y: auto;
 }
 

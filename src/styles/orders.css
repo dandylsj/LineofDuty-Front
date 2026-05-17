@@ -1,349 +1,479 @@
+/* ===================================================
+   Orders Page
+=================================================== */
+
 .orders-layout {
-  background-color: #f5f6f7;
+  background: #f5f6f8;
   min-height: 100vh;
-  color: #333;
+  color: #222;
 }
 
 .orders-container {
-  max-width: 1000px;
+  max-width: 860px;
   margin: 0 auto;
-  padding: 40px 24px 80px;
+  padding: 36px 20px 80px;
 }
 
-/* Header */
-.orders-header {
+/* ── 페이지 헤더 ── */
+.orders-page-header {
   margin-bottom: 24px;
 }
 
 .orders-page-title {
-  font-size: 24px;
+  font-size: 22px;
   font-weight: 800;
   color: #111;
+  margin: 0 0 4px;
+}
+
+.orders-page-sub {
+  font-size: 13px;
+  color: #888;
   margin: 0;
 }
 
-/* Filter Tabs */
-.orders-filter-tabs {
+/* ── 탭 필터 ── */
+.orders-tabs {
   display: flex;
-  gap: 8px;
-  margin-bottom: 24px;
-  border-bottom: 1px solid #ddd;
-  padding-bottom: 16px;
+  gap: 6px;
+  margin-bottom: 16px;
 }
 
-.orders-filter-tabs button {
-  background: #fff;
-  border: 1px solid #ddd;
+.orders-tab {
+  padding: 8px 18px;
+  border: 1px solid #d1d5db;
   border-radius: 20px;
-  padding: 8px 16px;
-  font-size: 14px;
+  background: #fff;
+  font-size: 13px;
   font-weight: 500;
   color: #555;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.18s;
+  font-family: inherit;
 }
 
-.orders-filter-tabs button:hover {
-  border-color: #333;
-  color: #333;
+.orders-tab:hover {
+  border-color: #0050a0;
+  color: #0050a0;
 }
 
-.orders-filter-tabs button.active {
-  background: #333;
+.orders-tab--active {
+  background: #0050a0;
+  border-color: #0050a0;
   color: #fff;
-  border-color: #333;
   font-weight: 700;
 }
 
-/* Orders List */
+/* ── 주문 건수 ── */
+.orders-count {
+  font-size: 13px;
+  color: #666;
+  margin: 0 0 16px;
+}
+
+.orders-count strong {
+  color: #0050a0;
+}
+
+/* ── 주문 목록 ── */
 .orders-list {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
 }
 
-/* Order Item Card */
-.order-item-card {
+/* ===================================================
+   Order Card
+=================================================== */
+.oc-card {
   background: #fff;
-  border: 1px solid #e4e4e4;
-  border-radius: 8px;
+  border: 1px solid #e2e4e8;
+  border-radius: 12px;
   overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
 }
 
-.order-card-header {
-  background: #fcfcfc;
-  padding: 16px 20px;
-  border-bottom: 1px solid #e4e4e4;
+/* ── 카드 헤더 ── */
+.oc-header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  background: #f9fafb;
+  border-bottom: 1px solid #e8eaed;
 }
 
-.order-date {
-  font-size: 16px;
-  font-weight: 700;
-  color: #111;
-}
-
-.order-header-right {
+.oc-header-left {
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
-.order-id {
-  font-size: 13px;
-  color: #777;
-}
-
-.btn-order-detail {
-  font-size: 13px;
-  color: #0073e9;
-  text-decoration: none;
-  font-weight: 600;
-}
-
-.btn-order-detail:hover {
-  text-decoration: underline;
-}
-
-/* Card Body */
-.order-card-body {
-  padding: 20px;
-}
-
-.order-status-title {
-  font-size: 18px;
+.oc-date {
+  font-size: 15px;
   font-weight: 700;
   color: #111;
-  margin-bottom: 16px;
 }
 
-.order-product-row {
+.oc-num {
+  font-size: 12px;
+  color: #9ca3af;
+  padding: 2px 8px;
+  background: #f3f4f6;
+  border-radius: 4px;
+}
+
+.oc-header-right {
   display: flex;
-  align-items: flex-start;
-  gap: 20px;
-  padding-bottom: 20px;
-  margin-bottom: 20px;
-  border-bottom: 1px solid #f0f0f0;
+  align-items: center;
+  gap: 10px;
 }
 
-.order-product-row:last-child {
-  border-bottom: none;
-  margin-bottom: 0;
-  padding-bottom: 0;
+.oc-badge {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 20px;
+  letter-spacing: 0.2px;
 }
 
-.order-product-img {
-  width: 80px;
-  height: 80px;
+.oc-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  color: #9ca3af;
+  display: flex;
+  align-items: center;
+  border-radius: 4px;
+  transition: background 0.15s;
+}
+.oc-toggle:hover { background: #f3f4f6; }
+
+/* ── 접힌 미리보기 ── */
+.oc-preview {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.oc-preview:hover { background: #fafbfc; }
+
+.oc-preview-img {
+  width: 48px;
+  height: 48px;
   border-radius: 6px;
   overflow: hidden;
-  border: 1px solid #eee;
+  border: 1px solid #e8eaed;
   flex-shrink: 0;
-  cursor: pointer;
+  background: #f5f6f8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
-
-.order-product-img img {
+.oc-preview-img img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-.no-img {
+.oc-preview-name {
+  flex: 1;
+  font-size: 14px;
+  color: #333;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── 카드 바디 ── */
+.oc-body {
+  padding: 0;
+}
+
+/* ── 상품 행 ── */
+.oc-item-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 20px;
+  border-bottom: 1px solid #f3f4f6;
+}
+.oc-item-row:last-of-type {
+  border-bottom: none;
+}
+
+/* 상품 이미지 */
+.oc-item-img {
+  width: 100px;
+  height: 100px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #e8eaed;
+  flex-shrink: 0;
+  background: #f5f6f8;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.15s;
+}
+.oc-item-img:hover { opacity: 0.85; }
+.oc-item-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.oc-no-img {
   width: 100%;
   height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #f8f9fa;
-  color: #adb5bd;
-  font-size: 12px;
+  background: #f5f6f8;
+  border-radius: 8px;
 }
 
-.order-product-info {
+/* 상품 정보 */
+.oc-item-info {
   flex: 1;
+  min-width: 0;
+  padding-top: 2px;
 }
 
-.product-name {
+.oc-item-name {
   font-size: 15px;
-  font-weight: 500;
-  color: #222;
-  margin: 0 0 8px 0;
-  line-height: 1.4;
+  font-weight: 600;
+  color: #111;
+  margin: 0 0 8px;
+  line-height: 1.45;
   cursor: pointer;
+  transition: color 0.15s;
 }
+.oc-item-name:hover { color: #0050a0; text-decoration: underline; }
 
-.product-name:hover {
-  text-decoration: underline;
-}
-
-.product-meta {
+.oc-item-meta {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
+  margin-bottom: 6px;
 }
 
-.product-meta .price {
-  font-size: 15px;
+.oc-item-price {
+  font-size: 16px;
   font-weight: 700;
   color: #111;
 }
 
-.product-meta .qty {
+.oc-item-qty {
   font-size: 13px;
   color: #888;
-  border-left: 1px solid #ddd;
-  padding-left: 8px;
+  padding-left: 10px;
+  border-left: 1px solid #e0e0e0;
 }
 
-.price-total {
+.oc-item-subtotal {
+  font-size: 13px;
+  color: #6b7280;
+}
+.oc-item-subtotal strong {
+  color: #0050a0;
   font-size: 14px;
-  color: #555;
 }
 
-.price-total strong {
+/* 액션 버튼 그룹 */
+.oc-item-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  width: 110px;
+  flex-shrink: 0;
+  padding-top: 2px;
+}
+
+/* ── 버튼 공통 ── */
+.oc-btn {
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s;
+  text-align: center;
+  border: 1px solid #d1d5db;
+  background: #fff;
+  color: #444;
+  white-space: nowrap;
+}
+.oc-btn:hover {
+  background: #f3f4f6;
+  border-color: #9ca3af;
+}
+
+.oc-btn--primary {
+  border-color: #0050a0;
+  color: #0050a0;
+  background: #fff;
+}
+.oc-btn--primary:hover {
+  background: #eff6ff;
+}
+
+.oc-btn--outline {
+  border-color: #374151;
+  color: #374151;
+  background: #fff;
+}
+.oc-btn--outline:hover {
+  background: #f3f4f6;
+}
+
+.oc-btn--dark {
+  background: #1a1a2e;
+  color: #fff;
+  border-color: #1a1a2e;
+  padding: 11px 24px;
+}
+.oc-btn--dark:hover { background: #000; }
+
+/* ── 카드 푸터 ── */
+.oc-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  background: #f9fafb;
+  border-top: 1px solid #e8eaed;
+}
+
+.oc-footer-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.oc-footer-label {
+  font-size: 13px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.oc-footer-price {
   font-size: 18px;
+  font-weight: 800;
   color: #111;
 }
 
-.order-product-actions {
+.oc-footer-actions {
   display: flex;
-  flex-direction: column;
   gap: 8px;
-  width: 120px;
-  flex-shrink: 0;
 }
 
-.btn-action {
-  width: 100%;
-  padding: 8px 0;
-  background: #fff;
-  border: 1px solid #ddd;
-  border-radius: 4px;
+/* 에러 행 */
+.oc-fetch-error {
+  padding: 20px;
   font-size: 13px;
-  color: #333;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
+  color: #b91c1c;
 }
 
-.btn-action:hover {
-  background: #f8f9fa;
-  border-color: #bbb;
-}
-
-.btn-action.primary {
-  border-color: #0073e9;
-  color: #0073e9;
-}
-
-.btn-action.primary:hover {
-  background: #f0f7ff;
-}
-
-.error-row p {
-  color: #e02020;
-  font-size: 14px;
-  margin: 0;
-}
-
-/* Loading & Empty States */
+/* ===================================================
+   로딩 / 에러 / 빈 상태
+=================================================== */
 .orders-loading {
   text-align: center;
-  padding: 100px 0;
-  color: #666;
+  padding: 80px 0;
+  color: #6b7280;
 }
 
-.spinner {
-  width: 40px;
-  height: 40px;
-  border: 3px solid #f3f3f3;
-  border-top: 3px solid #333;
+.orders-spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid #e5e7eb;
+  border-top-color: #0050a0;
   border-radius: 50%;
   margin: 0 auto 16px;
-  animation: spin 1s linear infinite;
+  animation: spin 0.9s linear infinite;
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  to { transform: rotate(360deg); }
 }
 
-.orders-empty-box {
+.orders-error {
+  padding: 16px 20px;
+  background: #fef2f2;
+  border-left: 4px solid #dc2626;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #dc2626;
+}
+
+.orders-empty {
   text-align: center;
-  padding: 100px 0;
+  padding: 80px 0;
   background: #fff;
-  border-radius: 8px;
-  border: 1px solid #e4e4e4;
+  border-radius: 12px;
+  border: 1px solid #e2e4e8;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
 }
 
-.orders-empty-box .empty-icon {
-  font-size: 48px;
-  margin-bottom: 16px;
+.orders-empty p {
+  font-size: 15px;
+  color: #6b7280;
+  margin: 0;
 }
 
-.orders-empty-box p {
-  font-size: 16px;
-  color: #555;
-  margin-bottom: 24px;
-}
+/* ===================================================
+   반응형
+=================================================== */
+@media (max-width: 640px) {
+  .orders-container { padding: 24px 14px 80px; }
 
-.btn-go-shop {
-  padding: 12px 24px;
-  background: #333;
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-}
+  .oc-header { padding: 12px 14px; }
 
-.btn-go-shop:hover {
-  background: #111;
-}
-
-.orders-error-box {
-  background: #FFF0F2;
-  border-left: 4px solid #C8102E;
-  padding: 16px;
-  color: #C8102E;
-  font-size: 14px;
-  border-radius: 4px;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  .orders-container {
-    padding: 24px 16px 60px;
+  .oc-item-row {
+    padding: 16px 14px;
+    flex-wrap: wrap;
   }
 
-  .order-product-row {
-    flex-direction: column;
-    position: relative;
-    padding-bottom: 60px;
+  .oc-item-img {
+    width: 80px;
+    height: 80px;
   }
 
-  .order-product-img {
-    width: 64px;
-    height: 64px;
-  }
+  .oc-item-info { min-width: calc(100% - 96px); }
 
-  .order-product-actions {
-    position: absolute;
-    bottom: 20px;
-    left: 0;
-    right: 0;
-    width: 100%;
+  .oc-item-actions {
     flex-direction: row;
+    width: 100%;
+    margin-top: 4px;
   }
+
+  .oc-item-actions .oc-btn {
+    flex: 1;
+  }
+
+  .oc-footer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .oc-footer-actions { width: 100%; }
+  .oc-footer-actions .oc-btn { width: 100%; }
+
+  .orders-tabs { flex-wrap: wrap; }
 }
 
 @media (max-width: 480px) {
-  .order-card-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-  }
+  .oc-date { font-size: 13px; }
+  .oc-num  { display: none; }
 }

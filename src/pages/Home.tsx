@@ -14,7 +14,7 @@ import {
   Trophy, Sparkles, ShoppingCart, Package, Gift,
   Home as HomeIcon, ShoppingBag, ClipboardList, User,
   Bot, MapPin, Sun, Cloud, CloudRain, Snowflake, CloudLightning, CloudSun,
-  ChevronLeft, ChevronRight, Shield,
+  ChevronLeft, ChevronRight, Shield, X, Bell,
 } from 'lucide-react';
 import '../styles/home.css';
 
@@ -128,6 +128,81 @@ function WeatherIcon({ status }: { status: string }) {
   return <Cloud {...props} color="#94a3b8" />;
 }
 
+const POPUP_STORAGE_KEY = 'pentagon_notice_popup_hidden_date';
+
+interface NoticePopupItem {
+  id: number;
+  title: string;
+  content: string;
+  createdAt: string;
+}
+
+function NoticePopup({ notice, onClose, onNavigate }: {
+  notice: NoticePopupItem;
+  onClose: () => void;
+  onNavigate: (id: number) => void;
+}) {
+  const [hideToday, setHideToday] = useState(false);
+
+  const handleClose = () => {
+    if (hideToday) {
+      const today = new Date().toISOString().slice(0, 10);
+      localStorage.setItem(POPUP_STORAGE_KEY, today);
+    }
+    onClose();
+  };
+
+  return (
+    <div className="np-overlay" onClick={handleClose}>
+      <div className="np-modal" onClick={(e) => e.stopPropagation()}>
+        {/* 헤더 */}
+        <div className="np-header">
+          <div className="np-header-left">
+            <Bell size={15} color="#0050a0" />
+            <span className="np-label">공지사항</span>
+          </div>
+          <button className="np-close" onClick={handleClose} aria-label="닫기">
+            <X size={18} />
+          </button>
+        </div>
+
+        {/* 본문 */}
+        <div className="np-body">
+          <h3 className="np-title">{notice.title}</h3>
+          <p className="np-date">
+            {new Date(notice.createdAt).toLocaleDateString('ko-KR', {
+              year: 'numeric', month: 'long', day: 'numeric',
+            })}
+          </p>
+          <p className="np-content">
+            {notice.content.length > 160
+              ? notice.content.slice(0, 160) + '…'
+              : notice.content}
+          </p>
+        </div>
+
+        {/* 푸터 */}
+        <div className="np-footer">
+          <label className="np-hide-today">
+            <input
+              type="checkbox"
+              checked={hideToday}
+              onChange={(e) => setHideToday(e.target.checked)}
+            />
+            <span>오늘 하루 보지 않기</span>
+          </label>
+          <div className="np-footer-btns">
+            <button className="np-btn np-btn--ghost" onClick={handleClose}>닫기</button>
+            <button className="np-btn np-btn--primary" onClick={() => { onNavigate(notice.id); handleClose(); }}>
+              자세히 보기
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function BannerCarousel() {
   const navigate = useNavigate();
   const [current, setCurrent] = useState(0);
@@ -223,6 +298,8 @@ export default function Home() {
   const { isLoggedIn, userId } = useAuth();
   const [detailedUserInfo, setDetailedUserInfo] = useState<UserInfo | null>(null);
 
+  const [popupNotice, setPopupNotice] = useState<NoticePopupItem | null>(null);
+
   const [selectedCity, setSelectedCity] = useState(CITIES[0]);
   const [weather, setWeather] = useState<WeatherInfo | null>(null);
   const [weatherLoading, setWeatherLoading] = useState(true);
@@ -265,6 +342,29 @@ export default function Home() {
       })
       .catch(() => {})
       .finally(() => setNoticesLoading(false));
+  }, []);
+
+  useEffect(() => {
+    const today = new Date().toISOString().slice(0, 10);
+    const hiddenDate = localStorage.getItem(POPUP_STORAGE_KEY);
+    if (hiddenDate === today) return;
+
+    noticeApi
+      .getNotice(1)
+      .then((res: AxiosResponse) => {
+        const data = res.data?.data;
+        if (data?.id) setPopupNotice(data);
+      })
+      .catch(() => {
+        noticeApi
+          .getNoticeList({ page: 0, size: 1 })
+          .then((res: AxiosResponse) => {
+            const data = res.data?.data;
+            const list = Array.isArray(data) ? data : data?.content || [];
+            if (list.length > 0) setPopupNotice(list[0]);
+          })
+          .catch(() => {});
+      });
   }, []);
 
   useEffect(() => {
@@ -414,6 +514,15 @@ export default function Home() {
   return (
     <div className="home-page">
       <Header />
+
+      {/* 공지 팝업 */}
+      {popupNotice && (
+        <NoticePopup
+          notice={popupNotice}
+          onClose={() => setPopupNotice(null)}
+          onNavigate={(id) => navigate(`/notices/${id}`)}
+        />
+      )}
 
       {/* Hero Banner */}
       <BannerCarousel />

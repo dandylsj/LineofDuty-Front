@@ -4,6 +4,7 @@ import { orderApi } from "../api/orderApi";
 import type { OrderCreateData, OrderGetData } from "../api/orderApi";
 import Header from "../components/Header";
 import { setPendingPaymentV2 } from "../store/pendingPayment";
+import { getPendingOrderPk, setPendingOrderPk, clearPendingOrderPk } from "../store/cartStorage";
 import "../styles/orderCreate.css";
 
 /* =====================================================================
@@ -87,6 +88,15 @@ export default function OrderCreate() {
 
     const initOrder = async () => {
       try {
+        // ✅ 이전 미완료 주문이 있으면 먼저 삭제 (재결제 시 수량 누적 방지)
+        const prevOrderPk = getPendingOrderPk();
+        if (prevOrderPk) {
+          try {
+            await orderApi.deleteOrder(prevOrderPk);
+          } catch { /* 이미 삭제됐거나 완료된 주문이면 무시 */ }
+          clearPendingOrderPk();
+        }
+
         const itemsToOrder: BulkItem[] = isBulk
           ? bulkItems
           : [{ product: singleProduct!, quantity: singleQuantity! }];
@@ -120,8 +130,9 @@ export default function OrderCreate() {
           } catch { /* ignore */ }
         }
 
-        // ✅ addOrderToHistory는 여기서 호출하지 않음
-        // → 결제 완료(PaymentSuccess) 시점에만 history에 추가
+        // ✅ 새로 생성된 주문 PK를 localStorage에 저장 (비우기/재결제 시 삭제에 활용)
+        setPendingOrderPk(resolvedOrderPk);
+
         setOrderPk(resolvedOrderPk);
         setPayAmount(resolvedAmount);
         setTossOrderId(resolvedOrderId);

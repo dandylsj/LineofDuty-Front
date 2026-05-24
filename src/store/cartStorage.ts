@@ -1,3 +1,24 @@
+// ── 미완료 주문 PK 추적 (localStorage) ────────────────────────────────
+// OrderCreate 마운트 시 생성된 DB 주문 PK를 기억해 두었다가
+// 재결제 시 이전 주문을 삭제하거나 장바구니 비우기 시 DB도 함께 정리하는 데 사용
+const PENDING_ORDER_KEY = "pentagon_pending_order_pk";
+
+export function getPendingOrderPk(): number | null {
+  const raw = localStorage.getItem(PENDING_ORDER_KEY);
+  if (!raw) return null;
+  const n = parseInt(raw, 10);
+  return Number.isFinite(n) && n > 0 ? n : null;
+}
+
+export function setPendingOrderPk(orderPk: number): void {
+  localStorage.setItem(PENDING_ORDER_KEY, String(orderPk));
+}
+
+export function clearPendingOrderPk(): void {
+  localStorage.removeItem(PENDING_ORDER_KEY);
+}
+// ──────────────────────────────────────────────────────────────────────
+
 export type CartItem = {
   productId: number;
   name: string;

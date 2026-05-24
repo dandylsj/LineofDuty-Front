@@ -4,6 +4,7 @@ import Header from "../components/Header";
 import { paymentsApi } from "../api/paymentsApi";
 import { clearPendingPayment, getPendingPayment } from "../store/pendingPayment";
 import { addOrderToHistory } from "../store/orderHistory";
+import { clearPendingOrderPk } from "../store/cartStorage";
 import "../styles/payment.css";
 
 function getErrorMessage(error: unknown): string {
@@ -84,8 +85,9 @@ export default function PaymentSuccess() {
               const data   = getRes.data?.data as Record<string, unknown> | undefined;
               const status = String(data?.["status"] ?? "").toUpperCase();
               if (status === "DONE") {
-                // ✅ 결제 완료 확인 시 history에 추가
+                // ✅ 결제 완료 확인 시 history에 추가 + pendingOrderPk 추적 제거
                 addOrderToHistory(orderPk);
+                clearPendingOrderPk();
                 clearPendingPayment(orderId);
                 navigate("/orders/complete", { state: { payment: data } });
                 return;
@@ -102,8 +104,9 @@ export default function PaymentSuccess() {
           return;
         }
 
-        // ✅ 정상 결제 완료 시 history에 추가
+        // ✅ 정상 결제 완료 시 history에 추가 + pendingOrderPk 추적 제거
         addOrderToHistory(orderPk);
+        clearPendingOrderPk();
         clearPendingPayment(orderId);
         navigate("/orders/complete", { state: { payment: res.data?.data } });
       } catch (error) {

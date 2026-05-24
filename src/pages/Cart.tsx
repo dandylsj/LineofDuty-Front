@@ -1,24 +1,24 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "../components/Header";
 import QuantitySelector from "../components/QuantitySelector";
 import {
   clearCart,
+  clearPendingOrderPk,
   getCartTotal,
+  getPendingOrderPk,
   loadCart,
   removeFromCart,
   type CartItem,
   updateCartQuantity,
 } from "../store/cartStorage";
+import { orderApi } from "../api/orderApi";
 import "../styles/cart.css";
 
 export default function Cart() {
   const navigate = useNavigate();
-  const [items, setItems] = useState<CartItem[]>([]);
-
-  useEffect(() => {
-    setItems(loadCart());
-  }, []);
+  // lazy initializer: 컴포넌트 마운트 시 1번만 loadCart() 호출 (useEffect 불필요)
+  const [items, setItems] = useState<CartItem[]>(() => loadCart());
 
   const total = getCartTotal(items);
 
@@ -125,7 +125,15 @@ export default function Cart() {
                 </button>
                 <button
                   className="cart-btn ghost"
-                  onClick={() => {
+                  onClick={async () => {
+                    // ✅ DB에 미완료 주문이 있으면 함께 삭제
+                    const pendingPk = getPendingOrderPk();
+                    if (pendingPk) {
+                      try {
+                        await orderApi.deleteOrder(pendingPk);
+                      } catch { /* 이미 삭제됐거나 완료된 주문이면 무시 */ }
+                      clearPendingOrderPk();
+                    }
                     clearCart();
                     setItems([]);
                   }}

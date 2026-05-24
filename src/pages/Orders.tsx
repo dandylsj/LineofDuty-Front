@@ -2,25 +2,18 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "../components/Header";
 import { orderApi } from "../api/orderApi";
+import type { OrderItemData } from "../api/orderApi";
 import { loadOrderHistory } from "../store/orderHistory";
 import { Package, ChevronDown, ChevronUp, ShoppingBag } from "lucide-react";
 import "../styles/orders.css";
-
-type OrderItem = {
-  productId: number;
-  productName: string;
-  price: number;
-  quantity: number;
-  productImageUrl?: string;
-};
 
 type OrderSummary = {
   id: number;
   status?: string;
   totalPrice?: number;
   createdAt?: string;
-  items?: OrderItem[];
-  raw?: any;
+  items?: OrderItemData[];
+  raw?: unknown;
 };
 
 const STATUS_MAP: Record<string, { label: string; color: string; bg: string }> = {
@@ -161,7 +154,9 @@ function OrderCard({ order, onNavigate }: { order: OrderSummary; onNavigate: (pa
                 <ShoppingBag size={28} color="#aaa" strokeWidth={1.5} />
               </div>
               <div className="oc-item-info">
-                <p className="oc-item-name">{order.raw?.orderName ?? '군장용품 외'}</p>
+                <p className="oc-item-name">
+                  {(order.raw as Record<string, unknown>)?.orderName as string ?? '군장용품 외'}
+                </p>
                 <div className="oc-item-meta">
                   <span className="oc-item-price">{order.totalPrice?.toLocaleString() ?? 0}원</span>
                 </div>
@@ -212,10 +207,10 @@ export default function Orders() {
             try {
               const res = await orderApi.getOrder(id);
               const data = res.data?.data;
-              const items: OrderItem[] =
+              const items: OrderItemData[] =
                 data?.orderItems ?? data?.items ?? [];
               return {
-                id: data?.id ?? id,
+                id: data?.id ?? data?.orderId ?? id,
                 status: data?.status,
                 totalPrice: data?.totalPrice ?? data?.total_price,
                 createdAt: data?.createdAt ?? data?.created_at,
@@ -234,13 +229,17 @@ export default function Orders() {
         });
 
         setOrders(results);
-      } catch (e: any) {
-        setError(e?.response?.data?.message || '주문 내역을 불러오지 못했습니다.');
+      } catch (err: unknown) {
+        const msg =
+          err instanceof Error
+            ? err.message
+            : '주문 내역을 불러오지 못했습니다.';
+        setError(msg);
       } finally {
         setLoading(false);
       }
     };
-    fetchOrders();
+    void fetchOrders();
   }, []);
 
   const filteredOrders = orders.filter((o) => {

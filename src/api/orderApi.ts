@@ -14,6 +14,15 @@ export interface OrderUpdateRequest {
   quantity: number;
 }
 
+// 백엔드 주문 상품 항목
+export interface OrderItemData {
+  productId: number;
+  productName: string;
+  price: number;
+  quantity: number;
+  productImageUrl?: string;
+}
+
 // 백엔드 OrderCreateResponse DTO
 export interface OrderCreateData {
   id: number;
@@ -26,16 +35,29 @@ export interface OrderCreateData {
 }
 
 // 백엔드 OrderGetResponse DTO
+// 백엔드 버전에 따라 camelCase / snake_case 혼용 가능성이 있어 optional로 선언
 export interface OrderGetData {
-  userId: number;
-  userName: string;
-  orderId: number;
-  orderNumber: string;
-  totalPrice: number;
-  isOrderCompleted: boolean;
-  paymentStatus: string | null;
-  createdAt: string;
-  modifiedAt: string;
+  // 주문 식별자 (버전에 따라 id 또는 orderId)
+  id?: number;
+  orderId?: number;
+  userId?: number;
+  userName?: string;
+  orderNumber?: string;
+  orderName?: string;
+  // 주문 상태 (PENDING / PAID / SHIPPING / DELIVERED / CANCELLED 등)
+  status?: string;
+  paymentStatus?: string | null;
+  isOrderCompleted?: boolean;
+  // 금액 (camelCase 우선, snake_case 폴백)
+  totalPrice?: number;
+  total_price?: number;
+  // 날짜 (camelCase 우선, snake_case 폴백)
+  createdAt?: string;
+  created_at?: string;
+  modifiedAt?: string;
+  // 주문 상품 목록 (키 이름이 다를 수 있음)
+  orderItems?: OrderItemData[];
+  items?: OrderItemData[];
 }
 
 // 공통 API 응답 래퍼

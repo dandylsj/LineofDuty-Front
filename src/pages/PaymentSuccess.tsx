@@ -3,17 +3,20 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import Header from "../components/Header";
 import { paymentsApi } from "../api/paymentsApi";
 import { clearPendingPayment, getPendingPayment } from "../store/pendingPayment";
+import { addOrderToHistory } from "../store/orderHistory";
 import "../styles/payment.css";
 
-function getErrorMessage(error: unknown) {
-  const anyErr = error as any;
-  return (
-    anyErr?.response?.data?.message ||
-    anyErr?.response?.data?.error ||
-    anyErr?.response?.data?.code ||
-    anyErr?.message ||
-    "요청 처리 중 오류가 발생했습니다."
-  );
+function getErrorMessage(error: unknown): string {
+  if (error && typeof error === "object") {
+    const e = error as Record<string, unknown>;
+    const res = e["response"] as Record<string, unknown> | undefined;
+    const data = res?.["data"] as Record<string, unknown> | undefined;
+    if (typeof data?.["message"] === "string") return data["message"];
+    if (typeof data?.["error"]   === "string") return data["error"];
+    if (typeof data?.["code"]    === "string") return data["code"];
+    if (typeof e["message"]      === "string") return e["message"];
+  }
+  return "요청 처리 중 오류가 발생했습니다.";
 }
 
 function shouldTryDoneLookup(message: string) {
@@ -34,8 +37,8 @@ export default function PaymentSuccess() {
 
   useEffect(() => {
     const paymentKey = params.get("paymentKey");
-    const orderId = params.get("orderId");
-    const amount = params.get("amount");
+    const orderId    = params.get("orderId");
+    const amount     = params.get("amount");
 
     if (calledRef.current) return;
     calledRef.current = true;
@@ -50,8 +53,8 @@ export default function PaymentSuccess() {
 
     const confirmPayment = async () => {
       try {
-        const pending = getPendingPayment(orderId);
-        const orderPk = pending?.orderPk ?? null;
+        const pending  = getPendingPayment(orderId);
+        const orderPk  = pending?.orderPk ?? null;
 
         if (!orderPk) {
           alert("주문 정보를 찾지 못했습니다. 주문 페이지에서 다시 시도해주세요.");
@@ -60,7 +63,6 @@ export default function PaymentSuccess() {
         }
 
         // 1) createPayment: 결제 레코드 생성 + paymentKey 저장
-        // 새로고침/중복진입 시 "이미 결제한 주문" 등으로 실패할 수 있어도 confirm을 시도
         let createError: unknown = null;
         try {
           await paymentsApi.createPayment({ orderId: orderPk, paymentKey });
@@ -79,25 +81,29 @@ export default function PaymentSuccess() {
           if (shouldTryDoneLookup(confirmMsg)) {
             try {
               const getRes = await paymentsApi.getPaymentByPaymentKey(paymentKey);
-              const data = getRes.data?.data;
-              const status = String((data as any)?.status ?? "").toUpperCase();
+              const data   = getRes.data?.data as Record<string, unknown> | undefined;
+              const status = String(data?.["status"] ?? "").toUpperCase();
               if (status === "DONE") {
+                // ✅ 결제 완료 확인 시 history에 추가
+                addOrderToHistory(orderPk);
                 clearPendingPayment(orderId);
                 navigate("/orders/complete", { state: { payment: data } });
                 return;
               }
-            } catch {
-              // ignore
-            }
+            } catch { /* ignore */ }
           }
 
           const createMsg = createError ? getErrorMessage(createError) : "";
-          const message = createMsg && createMsg !== confirmMsg ? `${confirmMsg}\n(${createMsg})` : confirmMsg;
+          const message   = createMsg && createMsg !== confirmMsg
+            ? `${confirmMsg}\n(${createMsg})`
+            : confirmMsg;
           alert(message);
           navigate("/products");
           return;
         }
 
+        // ✅ 정상 결제 완료 시 history에 추가
+        addOrderToHistory(orderPk);
         clearPendingPayment(orderId);
         navigate("/orders/complete", { state: { payment: res.data?.data } });
       } catch (error) {
@@ -106,7 +112,7 @@ export default function PaymentSuccess() {
       }
     };
 
-    confirmPayment();
+    void confirmPayment();
   }, [params, navigate]);
 
   return (

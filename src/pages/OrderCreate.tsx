@@ -3,7 +3,6 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { orderApi } from "../api/orderApi";
 import type { OrderCreateData, OrderGetData } from "../api/orderApi";
 import Header from "../components/Header";
-import { addOrderToHistory } from "../store/orderHistory";
 import { setPendingPaymentV2 } from "../store/pendingPayment";
 import "../styles/orderCreate.css";
 
@@ -73,11 +72,11 @@ export default function OrderCreate() {
   })();
 
   // ── 주문 상태 (마운트 시 1번만 생성) ────────────────────────────
-  const [isPaying,      setIsPaying]      = useState(false);
-  const [orderPk,       setOrderPk]       = useState<number | null>(null);
-  const [payAmount,     setPayAmount]     = useState<number | null>(null);
-  const [tossOrderId,   setTossOrderId]   = useState<string | null>(null);
-  const [orderReady,    setOrderReady]    = useState(false);
+  const [isPaying,    setIsPaying]    = useState(false);
+  const [orderPk,     setOrderPk]     = useState<number | null>(null);
+  const [payAmount,   setPayAmount]   = useState<number | null>(null);
+  const [tossOrderId, setTossOrderId] = useState<string | null>(null);
+  const [orderReady,  setOrderReady]  = useState(false);
 
   // ── 마운트 시 주문 1번 생성 ──────────────────────────────────────
   useEffect(() => {
@@ -121,7 +120,8 @@ export default function OrderCreate() {
           } catch { /* ignore */ }
         }
 
-        addOrderToHistory(resolvedOrderPk);
+        // ✅ addOrderToHistory는 여기서 호출하지 않음
+        // → 결제 완료(PaymentSuccess) 시점에만 history에 추가
         setOrderPk(resolvedOrderPk);
         setPayAmount(resolvedAmount);
         setTossOrderId(resolvedOrderId);

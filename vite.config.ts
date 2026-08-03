@@ -7,7 +7,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'https://lsjyahoo.synology.me:8443',
+        target: 'https://lineofduty.dandyhomelab.uk',
         changeOrigin: true,
       },
     },

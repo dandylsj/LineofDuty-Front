@@ -2,7 +2,7 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://lsjyahoo.synology.me:8443/api/:path*"
+      "destination": "https://lineofduty.dandyhomelab.uk/api/:path*"
     },
     {
       "source": "/(.*)",

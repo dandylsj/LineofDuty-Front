@@ -9,13 +9,16 @@ import { weatherApi } from '../api/weatherApi';
 import { noticeApi } from '../api/noticeApi';
 import { productApi } from '../api/productApi';
 import { bannerApi } from '../api/bannerApi';
+import { categoryApi } from '../api/categoryApi';
+import type { CategoryResponse } from '../api/categoryApi';
+import { getCategoryVisual } from '../utils/categoryVisual';
 import type { BannerResponse } from '../api/bannerApi';
 import {
   Trophy, Sparkles, ShoppingCart, Package, Gift,
   Home as HomeIcon, ShoppingBag, ClipboardList, User,
   Bot, MapPin, Sun, Cloud, CloudRain, Snowflake, CloudLightning, CloudSun,
-  ChevronLeft, ChevronRight, Shield, X, Bell,
-  Calendar, Shirt, Footprints, Droplets, Cpu, Star, ChevronRight as ArrowRight,
+  ChevronLeft, ChevronRight, X, Bell,
+  Calendar, ChevronRight as ArrowRight,
 } from 'lucide-react';
 import '../styles/home.css';
 
@@ -45,6 +48,7 @@ interface ProductItem {
   price: number;
   productImageUrl?: string | null;
   description?: string;
+  categoryName?: string;
 }
 
 const QUICK_ACTIONS = [
@@ -55,14 +59,6 @@ const QUICK_ACTIONS = [
   { Icon: Gift,         label: '이벤트',  path: '/notices' },
 ];
 
-const CATEGORIES = [
-  { Icon: Shirt,      label: '군복/전투복', path: '/products?keyword=군복',   color: '#4a5c2a', bg: '#eef2e4' },
-  { Icon: Footprints, label: '군화/전투화', path: '/products?keyword=군화',   color: '#7c5c2a', bg: '#f5ede0' },
-  { Icon: Droplets,   label: '위생/세면',   path: '/products?keyword=세면',   color: '#2a5c7c', bg: '#e0eef5' },
-  { Icon: Package,    label: '생활용품',    path: '/products?keyword=생활',   color: '#5c2a7c', bg: '#eee0f5' },
-  { Icon: Cpu,        label: '전자기기',    path: '/products?keyword=전자',   color: '#2a7c5c', bg: '#e0f5ee' },
-  { Icon: Star,       label: '베스트',      path: '/products?sort=best',      color: '#7c4a2a', bg: '#f5e8e0' },
-];
 
 const DDAY_KEY = 'pentagon_enlistment_dday';
 
@@ -461,6 +457,14 @@ export default function Home() {
       });
   }, []);
 
+  const [categories, setCategories] = useState<CategoryResponse[]>([]);
+  useEffect(() => {
+    categoryApi
+      .getCategories()
+      .then((res: AxiosResponse) => setCategories(res.data?.data ?? []))
+      .catch(() => {});
+  }, []);
+
   useEffect(() => {
     productApi
       .getProducts({ page: 0, size: 10, sort: 'createdAt', direction: 'desc' })
@@ -515,6 +519,7 @@ export default function Home() {
           {visible.map((product: ProductItem) => {
             const pid = product.productId ?? product.id;
             const imgUrl = product.productImageUrl;
+            const visual = getCategoryVisual(product.categoryName);
             return (
               <div
                 key={pid}
@@ -535,9 +540,9 @@ export default function Home() {
                   ) : null}
                   <div
                     className="home-product-slide__placeholder"
-                    style={{ display: imgUrl ? 'none' : 'flex' }}
+                    style={{ display: imgUrl ? 'none' : 'flex', background: visual.bg, color: visual.color }}
                   >
-                    <Shield size={28} color="#7a8c6a" strokeWidth={1.5} />
+                    <visual.Icon size={32} strokeWidth={1.4} />
                   </div>
                 </div>
                 <div className="home-product-slide__info">
@@ -677,17 +682,6 @@ export default function Home() {
         </div>
       </div>
 
-      {/* ── 추천 상품 (전체 너비, 5개 슬라이드) ── */}
-      <div className="home-inner">
-        <div className="home-card">
-          <div className="home-card__header">
-            <h3 className="home-card__title">추천 상품</h3>
-            <button className="home-card__more" onClick={() => navigate('/products')}>전체보기 ›</button>
-          </div>
-          <div className="home-card__body">{renderFeaturedProducts()}</div>
-        </div>
-      </div>
-
       {/* ── Row 2: 내 정보 + AI 상담 + D-DAY (3열) ── */}
       <div className="home-inner home-bottom-grid">
 
@@ -745,6 +739,17 @@ export default function Home() {
 
       </div>
 
+      {/* ── 추천 상품 (전체 너비, 5개 슬라이드) ── */}
+      <div className="home-inner">
+        <div className="home-card">
+          <div className="home-card__header">
+            <h3 className="home-card__title">추천 상품</h3>
+            <button className="home-card__more" onClick={() => navigate('/products')}>전체보기 ›</button>
+          </div>
+          <div className="home-card__body">{renderFeaturedProducts()}</div>
+        </div>
+      </div>
+
       {/* ── 카테고리 바로가기 ── */}
       <div className="home-inner home-categories">
         <div className="home-card">
@@ -756,18 +761,21 @@ export default function Home() {
           </div>
           <div className="home-card__body">
             <div className="home-cat-grid">
-              {CATEGORIES.map((cat) => (
-                <button
-                  key={cat.path}
-                  className="home-cat-item"
-                  onClick={() => navigate(cat.path)}
-                >
-                  <div className="home-cat-icon" style={{ background: cat.bg, color: cat.color }}>
-                    <cat.Icon size={22} strokeWidth={1.5} />
-                  </div>
-                  <span className="home-cat-label">{cat.label}</span>
-                </button>
-              ))}
+              {categories.map((cat) => {
+                const { Icon, color, bg } = getCategoryVisual(cat.name);
+                return (
+                  <button
+                    key={cat.id}
+                    className="home-cat-item"
+                    onClick={() => navigate(`/products?categoryId=${cat.id}`)}
+                  >
+                    <div className="home-cat-icon" style={{ background: bg, color }}>
+                      <Icon size={22} strokeWidth={1.5} />
+                    </div>
+                    <span className="home-cat-label">{cat.name}</span>
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>

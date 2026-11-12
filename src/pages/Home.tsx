@@ -1,5 +1,4 @@
 import Header from '../components/Header';
-import KoreaWeatherMap from '../components/KoreaWeatherMap';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/userAuth';
 import { useEffect, useState, useCallback } from 'react';
@@ -33,6 +32,8 @@ interface WeatherInfo {
   temp?: number;
   skyStatus?: string;
   description?: string;
+  precipitationType?: string;
+  time?: string;
 }
 
 interface NoticeItem {
@@ -206,9 +207,9 @@ const BG_GRADIENTS = [
   'linear-gradient(120deg, #0d0d2e 0%, #1a1a6a 50%, #2a2a99 100%)',
 ];
 
-function WeatherIcon({ status }: { status: string }) {
+function WeatherIcon({ status, size = 36 }: { status: string; size?: number }) {
   const s = status ?? '';
-  const props = { size: 36, strokeWidth: 1.5 };
+  const props = { size, strokeWidth: 1.5 };
   if (s.includes('맑음') || s.includes('해')) return <Sun {...props} color="#f59e0b" />;
   if (s.includes('비')) return <CloudRain {...props} color="#60a5fa" />;
   if (s.includes('눈')) return <Snowflake {...props} color="#93c5fd" />;
@@ -578,50 +579,41 @@ export default function Home() {
   };
 
   const renderWeather = () => {
-    const weatherContent = weatherLoading ? (
-      <p className="home-loading" style={{ padding: '12px 0' }}>불러오는 중...</p>
-    ) : weather ? (
-      <div className="home-weather-result">
-        <div className="home-weather-main">
-          <div className="home-weather-icon">
-            <WeatherIcon status={weather.skyStatus ?? weather.description ?? ''} />
-          </div>
-          <div className="home-weather__temp">
-            {weather.temperature ?? weather.temp ?? '--'}°
-          </div>
-        </div>
-        <p className="home-weather__desc">
-          {weather.skyStatus ?? weather.description ?? '정보 없음'}
-        </p>
-        <p className="home-weather__location">
-          <MapPin size={12} style={{ display: 'inline', marginRight: 4 }} />
-          {selectedCity.label.replace('📍 ', '')}
-        </p>
-      </div>
-    ) : (
-      <div className="home-weather-result">
-        <div className="home-weather-main">
-          <div className="home-weather-icon">
-            <Cloud size={36} color="#94a3b8" strokeWidth={1.5} />
-          </div>
-          <div className="home-weather__temp">--°</div>
-        </div>
-        <p className="home-weather__desc">날씨 정보 없음</p>
-        <p className="home-weather__location">
-          <MapPin size={12} style={{ display: 'inline', marginRight: 4 }} />
-          {selectedCity.label.replace('📍 ', '')}
-        </p>
-      </div>
-    );
+    if (weatherLoading) {
+      return <p className="home-loading" style={{ padding: '24px 0' }}>불러오는 중...</p>;
+    }
+
+    const sky = weather?.skyStatus ?? weather?.description;
+    const rain = weather?.precipitationType && weather.precipitationType !== '없음' ? weather.precipitationType : null;
+    const temp = weather?.temperature ?? weather?.temp;
+    // 예보 시각 "1500" → "15:00"
+    const time = weather?.time && weather.time.length === 4 ? `${weather.time.slice(0, 2)}:${weather.time.slice(2)}` : null;
 
     return (
-      <div className="home-weather-container">
-        <KoreaWeatherMap
-          cities={CITIES}
-          selectedCityId={selectedCity.id}
-          onSelectCity={handleSelectCity}
-        />
-        {weatherContent}
+      <div className="home-weather">
+        <div className="home-weather__icon">
+          {weather ? <WeatherIcon status={rain ?? sky ?? ''} size={64} /> : <Cloud size={64} color="#94a3b8" strokeWidth={1.5} />}
+        </div>
+        <div className="home-weather__temp">{temp ?? '--'}°</div>
+        <p className="home-weather__desc">{weather ? (rain ?? sky ?? '정보 없음') : '날씨 정보 없음'}</p>
+        <ul className="home-weather__meta">
+          <li>
+            <span>하늘</span>
+            <strong>{sky ?? '-'}</strong>
+          </li>
+          <li>
+            <span>강수</span>
+            <strong>{weather?.precipitationType ?? '-'}</strong>
+          </li>
+          <li>
+            <span>예보</span>
+            <strong>{time ?? '-'}</strong>
+          </li>
+        </ul>
+        <p className="home-weather__location">
+          <MapPin size={12} />
+          {selectedCity.label.replace('📍 ', '')}
+        </p>
       </div>
     );
   };
@@ -676,6 +668,19 @@ export default function Home() {
           <div className="home-card">
             <div className="home-card__header">
               <h3 className="home-card__title">오늘의 날씨</h3>
+              <select
+                className="home-weather__select"
+                value={selectedCity.id}
+                onChange={(e) => {
+                  const city = CITIES.find((c) => c.id === e.target.value);
+                  if (city) handleSelectCity(city);
+                }}
+                aria-label="지역 선택"
+              >
+                {CITIES.map((c) => (
+                  <option key={c.id} value={c.id}>{c.name}</option>
+                ))}
+              </select>
             </div>
             <div className="home-card__body">{renderWeather()}</div>
           </div>

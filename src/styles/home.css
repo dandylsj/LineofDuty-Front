@@ -669,53 +669,94 @@
 /* ===================================================
    Weather Widget
 =================================================== */
-.home-weather-container {
+.home-weather {
   display: flex;
   flex-direction: column;
-  align-items: stretch;
-}
-
-.home-weather-result {
+  align-items: center;
+  padding: 8px 0 4px;
   text-align: center;
-  padding: 12px 0 4px;
 }
 
-.home-weather-main {
+.home-weather__icon {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  margin-bottom: 6px;
-}
-
-.home-weather-icon {
-  font-size: 40px;
-  line-height: 1;
+  width: 112px;
+  height: 112px;
+  border-radius: 50%;
+  background: linear-gradient(160deg, #eef4ff 0%, #f8fafc 100%);
+  margin-bottom: 14px;
 }
 
 .home-weather__temp {
-  font-size: 44px;
+  font-size: 48px;
   font-weight: 800;
   color: #111;
   line-height: 1;
+  letter-spacing: -0.02em;
 }
 
 .home-weather__desc {
-  font-size: 14px;
-  color: #666;
-  margin: 0 0 6px;
-  font-weight: 500;
+  font-size: 15px;
+  color: #555;
+  margin: 8px 0 18px;
+  font-weight: 600;
+}
+
+.home-weather__meta {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  width: 100%;
+  list-style: none;
+  padding: 12px 0;
+  margin: 0 0 16px;
+  border-top: 1px solid #f0f2f5;
+  border-bottom: 1px solid #f0f2f5;
+}
+
+.home-weather__meta li {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.home-weather__meta li + li {
+  border-left: 1px solid #f0f2f5;
+}
+
+.home-weather__meta span {
+  font-size: 11px;
+  color: #999;
+}
+
+.home-weather__meta strong {
+  font-size: 13px;
+  color: #333;
+  font-weight: 700;
 }
 
 .home-weather__location {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   font-size: 12px;
   color: #0050a0;
   background: #eef4ff;
-  display: inline-block;
   padding: 4px 12px;
   border-radius: 20px;
   font-weight: 600;
   margin: 0;
+}
+
+.home-weather__select {
+  padding: 4px 8px;
+  border: 1px solid #e2e5ea;
+  border-radius: 6px;
+  background: #fff;
+  font-family: inherit;
+  font-size: 12px;
+  color: #444;
+  cursor: pointer;
 }
 
 /* ===================================================

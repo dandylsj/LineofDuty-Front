@@ -527,7 +527,7 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 20px;
-  margin-top: 20px;
+  margin-top: 0;
   margin-bottom: 20px;
 }
 

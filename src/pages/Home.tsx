@@ -682,17 +682,6 @@ export default function Home() {
         </div>
       </div>
 
-      {/* ── 추천 상품 (전체 너비, 5개 슬라이드) ── */}
-      <div className="home-inner">
-        <div className="home-card">
-          <div className="home-card__header">
-            <h3 className="home-card__title">추천 상품</h3>
-            <button className="home-card__more" onClick={() => navigate('/products')}>전체보기 ›</button>
-          </div>
-          <div className="home-card__body">{renderFeaturedProducts()}</div>
-        </div>
-      </div>
-
       {/* ── Row 2: 내 정보 + AI 상담 + D-DAY (3열) ── */}
       <div className="home-inner home-bottom-grid">
 
@@ -748,6 +737,17 @@ export default function Home() {
         {/* 입영 D-DAY */}
         <DdayCard onNavigate={navigate} />
 
+      </div>
+
+      {/* ── 추천 상품 (전체 너비, 5개 슬라이드) ── */}
+      <div className="home-inner">
+        <div className="home-card">
+          <div className="home-card__header">
+            <h3 className="home-card__title">추천 상품</h3>
+            <button className="home-card__more" onClick={() => navigate('/products')}>전체보기 ›</button>
+          </div>
+          <div className="home-card__body">{renderFeaturedProducts()}</div>
+        </div>
       </div>
 
       {/* ── 카테고리 바로가기 ── */}
